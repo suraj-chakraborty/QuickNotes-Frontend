@@ -23,14 +23,15 @@ export default function TextEditor() {
   // <--connect to server-->
   useEffect(() => {
     const s = io("https://cute-pear-newt-tux.cyclic.app/", {
+      reconnectionDelayMax: 10000,
       transports: ["polling", "websocket"],
     });
     setSocket(s);
 
     // <--disconnect from server-->
-    return () => {
-      s.disconnect();
-    };
+    // return () => {
+    //   s.disconnect();
+    // };
   }, []);
 
   useEffect(() => {
