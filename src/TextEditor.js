@@ -28,16 +28,10 @@ export default function TextEditor() {
     });
     setSocket(s);
 
-    s.on("connect", () => {
-      console.log(socket.id);
-    });
     // <--disconnect from server-->
 
     return () => {
       s.disconnect(1000);
-      s.on("disconnect", () => {
-        console.log("disconnected");
-      });
     };
   }, []);
 
