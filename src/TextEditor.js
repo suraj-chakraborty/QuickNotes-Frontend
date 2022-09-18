@@ -39,7 +39,7 @@ export default function TextEditor() {
         console.log("disconnected");
       });
     };
-  });
+  }, []);
 
   useEffect(() => {
     if (socket == null || quill == null) return;
