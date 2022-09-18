@@ -24,6 +24,7 @@ export default function TextEditor() {
   useEffect(() => {
     const s = io("https://cute-pear-newt-tux.cyclic.app/", {
       transports: ["websocket", "polling"],
+      withCredentials: true,
     });
     setSocket(s);
 
