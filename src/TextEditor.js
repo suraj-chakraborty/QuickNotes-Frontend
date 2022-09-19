@@ -19,25 +19,25 @@ export default function TextEditor() {
   const { id: documentId } = useParams();
   const [socket, setSocket] = useState();
   const [quill, setQuill] = useState();
-  console.log(documentId);
-  // <--------connect to server---------->
-  useEffect(
-    (documentId) => {
-      const s = io("https://cute-pear-newt-tux.cyclic.app/", {
-        path: "/socket.io",
-        secure: true,
-        withCredentials: true,
-      });
-      setSocket(s);
+  // console.log (documentId)
+  // <--connect to server-->
+  useEffect(() => {
+    const s = io("https://cute-pear-newt-tux.cyclic.app/", {
+      path: "/socket.io",
+      reconnectionDelayMax: 10000,
+      reconnectionAttempts: "Infinity",
+      timeout: 10000,
+      secure: true,
+      withCredentials: true,
+    });
+    setSocket(s);
 
-      // <-------disconnect from server-------->
+    // <--disconnect from server-->
 
-      return () => {
-        s.disconnect();
-      };
-    },
-    [documentId]
-  );
+    return () => {
+      s.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     if (socket == null || quill == null) return;
@@ -51,7 +51,7 @@ export default function TextEditor() {
   }, [socket, quill, documentId]);
 
   useEffect(() => {
-    if (socket === null || quill === null) return;
+    if (socket == null || quill == null) return;
 
     const interval = setInterval(() => {
       socket.emit("save-document", quill.getContents());
@@ -64,7 +64,7 @@ export default function TextEditor() {
 
   //live changing of text at different computers
   useEffect(() => {
-    if (socket === null || quill === null) return;
+    if (socket == null || quill == null) return;
 
     const handler = (delta) => {
       quill.updateContents(delta);
