@@ -23,6 +23,10 @@ export default function TextEditor() {
   // <--connect to server-->
   useEffect(() => {
     const s = io("https://cute-pear-newt-tux.cyclic.app", {
+      "force new connection": true,
+      reconnectionAttempts: "Infinity",
+      timeout: 10000,
+      transports: ["websocket"],
       withCredentials: true,
     });
     setSocket(s);
