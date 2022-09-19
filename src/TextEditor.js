@@ -22,8 +22,8 @@ export default function TextEditor() {
   // console.log (documentId)
   // <--connect to server-->
   useEffect(() => {
-    const s = io("https://cute-pear-newt-tux.cyclic.app", {
-      "force new connection": true,
+    const s = io("https://cute-pear-newt-tux.cyclic.app/", {
+      reconnectionDelayMax: 10000,
       reconnectionAttempts: "Infinity",
       timeout: 10000,
       withCredentials: true,
@@ -32,9 +32,9 @@ export default function TextEditor() {
 
     // <--disconnect from server-->
 
-    return () => {
-      s.disconnect(1000);
-    };
+    // return () => {
+    //   s.disconnect();
+    // };
   }, []);
 
   useEffect(() => {
