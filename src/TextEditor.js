@@ -26,7 +26,6 @@ export default function TextEditor() {
       "force new connection": true,
       reconnectionAttempts: "Infinity",
       timeout: 10000,
-      transports: ["websocket"],
       withCredentials: true,
     });
     setSocket(s);
