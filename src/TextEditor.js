@@ -22,7 +22,7 @@ export default function TextEditor() {
   // console.log (documentId)
   // <--connect to server-->
   useEffect(() => {
-    const s = io("https://cute-pear-newt-tux.cyclic.app/", {
+    const s = io("https://cute-pear-newt-tux.cyclic.app", {
       "force new connection": true,
       reconnectionAttempts: "Infinity",
       timeout: 10000,
