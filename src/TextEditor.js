@@ -23,7 +23,7 @@ export default function TextEditor() {
   // <--connect to server-->
   useEffect(() => {
     const s = io("https://cute-pear-newt-tux.cyclic.app/", {
-      transports: ["polling", "websocket"],
+      transports: ["websocket"],
       withCredentials: true,
     });
     setSocket(s);
