@@ -23,6 +23,7 @@ export default function TextEditor() {
   // <--connect to server-->
   useEffect(() => {
     const s = io("https://cute-pear-newt-tux.cyclic.app/", {
+      path: "/socket.io",
       reconnectionDelayMax: 10000,
       reconnectionAttempts: "Infinity",
       timeout: 10000,
@@ -32,9 +33,9 @@ export default function TextEditor() {
 
     // <--disconnect from server-->
 
-    // return () => {
-    //   s.disconnect();
-    // };
+    return () => {
+      s.disconnect();
+    };
   }, []);
 
   useEffect(() => {
