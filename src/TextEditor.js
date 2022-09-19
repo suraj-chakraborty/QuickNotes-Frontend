@@ -27,7 +27,6 @@ export default function TextEditor() {
       reconnectionDelayMax: 10000,
       reconnectionAttempts: "Infinity",
       timeout: 10000,
-      secure: true,
       withCredentials: true,
     });
     setSocket(s);
