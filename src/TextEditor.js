@@ -19,7 +19,7 @@ export default function TextEditor() {
   const { id: documentId } = useParams();
   const [socket, setSocket] = useState();
   const [quill, setQuill] = useState();
-  // console.log (documentId)
+  console.log(documentId);
   // <--connect to server-->
   useEffect(() => {
     const s = io("https://cute-pear-newt-tux.cyclic.app/", {
