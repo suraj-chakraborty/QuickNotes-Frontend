@@ -22,17 +22,14 @@ export default function TextEditor() {
   console.log(documentId);
   // <--connect to server-->
   useEffect(() => {
-    const s = io(
-      /*"https://cute-pear-newt-tux.cyclic.app/"*/ "http://localhost:8080",
-      {
-        path: "/socket.io",
-        reconnectionDelayMax: 10000,
-        reconnectionAttempts: "Infinity",
-        transports: ["polling"],
-        timeout: 10000,
-        withCredentials: true,
-      }
-    );
+    const s = io("https://cute-pear-newt-tux.cyclic.app", {
+      path: "/socket.io",
+      reconnectionDelayMax: 10000,
+      reconnectionAttempts: "Infinity",
+      transports: ["polling"],
+      timeout: 10000,
+      withCredentials: true,
+    });
     setSocket(s);
 
     // <--disconnect from server-->
