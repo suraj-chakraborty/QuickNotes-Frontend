@@ -26,7 +26,7 @@ export default function TextEditor() {
       path: "/socket.io",
       reconnectionDelayMax: 10000,
       reconnectionAttempts: "Infinity",
-      transports: ["websocket"],
+      transports: ["polling", "websocket"],
       timeout: 10000,
       withCredentials: true,
     });
