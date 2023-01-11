@@ -6,12 +6,22 @@ import { useParams } from "react-router-dom";
 
 const Save_Interval = 2000;
 const Toolbar_options = [
-  [{ header: [1, 2, 3, 4, 5, 6, false] }],
-  [{ font: [] }],
+  ["bold", "italic", "underline", "strike"],
+  ["blockquote", "code-block"],
+
+  [{ header: 1 }, { header: 2 }],
   [{ list: "ordered" }, { list: "bullet" }],
-  ["bold", "italic", "underline"],
-  [{ color: [] }, { background: [] }],
   [{ script: "sub" }, { script: "super" }],
+  [{ indent: "-1" }, { indent: "+1" }],
+  [{ direction: "rtl" }],
+
+  [{ size: ["small", false, "large", "huge"] }],
+  [{ header: [1, 2, 3, 4, 5, 6, false] }],
+
+  [{ color: [] }, { background: [] }],
+  [{ font: [] }],
+  [{ align: [] }],
+
   ["clean"],
 ];
 
@@ -22,11 +32,10 @@ export default function TextEditor() {
   console.log(documentId);
   // <--connect to server-->
   useEffect(() => {
-    const s = io("https://cute-pear-newt-tux.cyclic.app", {
+    const s = io(process.env.REACT_APP_BECKEND_URL || "http://localhost:8000", {
       path: "/socket.io",
       reconnectionDelayMax: 10000,
       reconnectionAttempts: "Infinity",
-      transports: ["polling"],
       timeout: 10000,
       withCredentials: true,
     });
