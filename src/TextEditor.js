@@ -32,7 +32,7 @@ export default function TextEditor() {
   console.log(documentId);
   // <--connect to server-->
   useEffect(() => {
-    const s = io(process.env.REACT_APP_BECKEND_URL || "http://localhost:8000", {
+    const s = io("https://quick-notes.onrender.com", {
       path: "/socket.io",
       reconnectionDelayMax: 10000,
       reconnectionAttempts: "Infinity",
