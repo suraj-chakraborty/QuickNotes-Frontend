@@ -1,70 +1,64 @@
-# Getting Started with Create React App
+# QuickNotes Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Frontend web application for QuickNotes — a clean, collaborative rich-text editor and multiplayer speed typing test.
+
+Built with React 19, Vite, Quill, and Socket.IO.
+
+## Features
+
+- **Live Collaboration**: Edit notes together in real-time with instant sync and active user counts.
+- **Rich Text Editor**: Formatted headers, checklists, code blocks, lists, links, images, and undo/redo history using Quill 2.
+- **Speed Typing & Race Mode**: Solo typing speed practice and real-time multiplayer racing against collaborators in the room. Includes audio keypress effects and live WPM/accuracy tracking.
+- **Templates**: Starter templates for meeting notes, PRDs, sprint tasks, and tech specs.
+- **Export Options**: Download notes as Markdown (`.md`), HTML (`.html`), Plain Text (`.txt`), or print to PDF.
+- **Customizable Appearance**: Light and dark mode support, paper tints (White, Sepia, Mint, Slate), and font switching (Sans, Serif, Mono).
+- **Recent Notes**: Slide-out drawer with your recently accessed notes stored locally.
+- **Mobile Responsive**: Clean layout optimized for mobile screens and tablets.
+
+## Tech Stack
+
+- **React 19**
+- **Vite 6**
+- **Quill 2**
+- **Socket.IO Client**
+- **Lucide React** (icons)
+- **Vanilla CSS** (custom design system)
+
+## Getting Started
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure Environment
+
+Create a `.env` file in this directory:
+
+```env
+VITE_BACKEND_URL=http://localhost:3000
+```
+
+> In production, change `VITE_BACKEND_URL` to your deployed backend URL.
+
+### 3. Run Locally
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ## Available Scripts
 
-In the project directory, you can run:
+- `npm run dev`: Starts the Vite development server with hot module reloading.
+- `npm run build`: Compiles and bundles production files into the `dist/` directory.
+- `npm run preview`: Previews the production build locally.
 
-### `npm start`
+## Deployment (Vercel)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. Import the repository into Vercel.
+2. In **Project Settings ➔ General**, set the Node.js version to **`22.x`** (or `20.x`).
+3. Under **Environment Variables**, set `VITE_BACKEND_URL` to your backend server URL.
+4. Deploy. (Client-side routing rules are already configured in `vercel.json`).
