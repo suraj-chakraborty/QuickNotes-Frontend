@@ -223,6 +223,32 @@ export default function TextEditor() {
     });
   }, [documentId, docTitle]);
 
+  // Align Quill picker dropdowns perfectly below the clicked label on mobile
+  useEffect(() => {
+    const handlePickerClick = (e) => {
+      const label = e.target.closest('.ql-picker-label');
+      if (!label) return;
+      const picker = label.closest('.ql-picker');
+      if (!picker) return;
+
+      const rect = label.getBoundingClientRect();
+      const options = picker.querySelector('.ql-picker-options');
+      if (options) {
+        const top = rect.bottom + 6;
+        const left = Math.max(8, Math.min(rect.left, window.innerWidth - 180));
+        options.style.setProperty('--picker-top', `${top}px`);
+        options.style.setProperty('--picker-left', `${left}px`);
+      }
+    };
+
+    document.addEventListener('click', handlePickerClick, true);
+    document.addEventListener('touchstart', handlePickerClick, { passive: true, capture: true });
+    return () => {
+      document.removeEventListener('click', handlePickerClick, true);
+      document.removeEventListener('touchstart', handlePickerClick, { capture: true });
+    };
+  }, []);
+
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
