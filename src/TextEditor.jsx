@@ -30,6 +30,11 @@ import {
   Zap,
   LayoutTemplate,
   Keyboard,
+  Grid,
+  Layers,
+  BookOpen,
+  Sliders,
+  AlignJustify,
 } from 'lucide-react';
 import TypingTest from './TypingTest';
 
@@ -144,6 +149,118 @@ const TEMPLATES = [
   },
 ];
 
+// Rich Page Designs Catalog
+export const PAGE_DESIGNS = [
+  {
+    id: 'blank',
+    name: 'Blank Page',
+    category: 'blank',
+    tag: 'Clean',
+    desc: 'Distraction-free blank canvas with zero background lines or grids.',
+    previewClass: 'preview-blank',
+    defaultTint: 'white',
+  },
+  {
+    id: 'ruled',
+    name: 'Ruled Notebook',
+    category: 'lined',
+    tag: 'Classic',
+    desc: 'Standard horizontal notebook lines with a red margin guide.',
+    previewClass: 'preview-ruled',
+    defaultTint: 'white',
+  },
+  {
+    id: 'college-ruled',
+    name: 'College Ruled',
+    category: 'lined',
+    tag: 'Compact',
+    desc: 'Narrower ruled lines for dense study notes and structured writing.',
+    previewClass: 'preview-college-ruled',
+    defaultTint: 'white',
+  },
+  {
+    id: 'legal-pad',
+    name: 'Yellow Legal Pad',
+    category: 'lined',
+    tag: 'Legal',
+    desc: 'Canary yellow legal pad with double red margin and blue ruling.',
+    previewClass: 'preview-legal-pad',
+    defaultTint: 'legal',
+  },
+  {
+    id: 'maths-grid',
+    name: 'Maths Page',
+    category: 'grid',
+    tag: 'Math & Sci',
+    desc: 'Crisp square grid pattern ideal for math equations, formulas, and tables.',
+    previewClass: 'preview-maths-grid',
+    defaultTint: 'white',
+  },
+  {
+    id: 'graph-paper',
+    name: 'Graph Page',
+    category: 'grid',
+    tag: 'Engineering',
+    desc: 'Precision millimeter graph paper with accented major and minor grids.',
+    previewClass: 'preview-graph-paper',
+    defaultTint: 'white',
+  },
+  {
+    id: 'dot-grid',
+    name: 'Dot Matrix',
+    category: 'grid',
+    tag: 'Bujo',
+    desc: 'Subtle dot matrix grid for bullet journaling, sketching, and diagrams.',
+    previewClass: 'preview-dot-grid',
+    defaultTint: 'white',
+  },
+  {
+    id: 'isometric',
+    name: 'Isometric 3D Grid',
+    category: 'grid',
+    tag: '3D & Design',
+    desc: 'Triangular isometric grid for 3D sketching and geometric math.',
+    previewClass: 'preview-isometric',
+    defaultTint: 'white',
+  },
+  {
+    id: 'cornell',
+    name: 'Cornell Notes',
+    category: 'creative',
+    tag: 'Academic',
+    desc: 'Systematic note layout with left cue/recall column and ruled body.',
+    previewClass: 'preview-cornell',
+    defaultTint: 'white',
+  },
+  {
+    id: 'vintage-parchment',
+    name: 'Vintage Parchment',
+    category: 'creative',
+    tag: 'Vintage',
+    desc: 'Antique warm sepia manuscript paper with classic vintage ruling.',
+    previewClass: 'preview-vintage-parchment',
+    defaultTint: 'parchment',
+  },
+  {
+    id: 'blueprint',
+    name: 'Blueprint Tech',
+    category: 'creative',
+    tag: 'Technical',
+    desc: 'Luminous cyan grid on architect blueprint navy background.',
+    previewClass: 'preview-blueprint',
+    defaultTint: 'blueprint',
+  },
+  {
+    id: 'music-staff',
+    name: 'Music Staff',
+    category: 'creative',
+    tag: 'Music',
+    desc: 'Repeating 5-line musical stave guides for lyrics and compositions.',
+    previewClass: 'preview-music-staff',
+    defaultTint: 'white',
+  },
+];
+
 export default function TextEditor() {
   const { id: documentId } = useParams();
   const navigate = useNavigate();
@@ -159,6 +276,8 @@ export default function TextEditor() {
   // Modals & Drawers
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isStyleOpen, setIsStyleOpen] = useState(false);
+  const [isPageDesignModalOpen, setIsPageDesignModalOpen] = useState(false);
+  const [pageFilter, setPageFilter] = useState('all');
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isRecentDrawerOpen, setIsRecentDrawerOpen] = useState(false);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
@@ -167,7 +286,11 @@ export default function TextEditor() {
   const [toasts, setToasts] = useState([]);
   const [wordGoal, setWordGoal] = useState(500);
 
-  // Styling options
+  // Styling & Page Design Options
+  const [pageDesign, setPageDesign] = useState(() => localStorage.getItem('qn-page-design') || 'ruled');
+  const [pageDensity, setPageDensity] = useState(() => localStorage.getItem('qn-page-density') || 'standard');
+  const [showMargin, setShowMargin] = useState(() => localStorage.getItem('qn-page-margin') !== 'false');
+  const [pageWidth, setPageWidth] = useState(() => localStorage.getItem('qn-page-width') || 'standard');
   const [theme, setTheme] = useState(() => localStorage.getItem('qn-theme') || 'light');
   const [paperTint, setPaperTint] = useState(() => localStorage.getItem('qn-paper') || 'white');
   const [fontFamily, setFontFamily] = useState(() => localStorage.getItem('qn-font') || 'sans');
@@ -185,6 +308,23 @@ export default function TextEditor() {
   const quillRef = useRef(null);
   quillRef.current = quill;
 
+  const pageStyleRef = useRef({
+    pageDesign,
+    paperTint,
+    fontFamily,
+    pageDensity,
+    showMargin,
+    pageWidth,
+  });
+  pageStyleRef.current = {
+    pageDesign,
+    paperTint,
+    fontFamily,
+    pageDensity,
+    showMargin,
+    pageWidth,
+  };
+
   // Apply Theme & Styling to DOM
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -200,6 +340,26 @@ export default function TextEditor() {
     document.documentElement.setAttribute('data-font', fontFamily);
     localStorage.setItem('qn-font', fontFamily);
   }, [fontFamily]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-page-design', pageDesign);
+    localStorage.setItem('qn-page-design', pageDesign);
+  }, [pageDesign]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-page-density', pageDensity);
+    localStorage.setItem('qn-page-density', pageDensity);
+  }, [pageDensity]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-show-margin', showMargin ? 'true' : 'false');
+    localStorage.setItem('qn-page-margin', showMargin ? 'true' : 'false');
+  }, [showMargin]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-page-width', pageWidth);
+    localStorage.setItem('qn-page-width', pageWidth);
+  }, [pageWidth]);
 
   // Handle Zen Mode Esc key
   useEffect(() => {
@@ -302,6 +462,14 @@ export default function TextEditor() {
       if (doc.title) {
         setDocTitle(doc.title);
       }
+      if (doc.pageStyle) {
+        if (doc.pageStyle.pageDesign) setPageDesign(doc.pageStyle.pageDesign);
+        if (doc.pageStyle.paperTint) setPaperTint(doc.pageStyle.paperTint);
+        if (doc.pageStyle.fontFamily) setFontFamily(doc.pageStyle.fontFamily);
+        if (doc.pageStyle.pageDensity) setPageDensity(doc.pageStyle.pageDensity);
+        if (doc.pageStyle.showMargin !== undefined) setShowMargin(doc.pageStyle.showMargin);
+        if (doc.pageStyle.pageWidth) setPageWidth(doc.pageStyle.pageWidth);
+      }
       quill.enable();
       setSaveStatus('saved');
       updateStats(quill);
@@ -315,15 +483,27 @@ export default function TextEditor() {
       setDocTitle(newTitle);
     };
 
+    const handlePageStyleUpdate = (newStyle) => {
+      if (!newStyle) return;
+      if (newStyle.pageDesign) setPageDesign(newStyle.pageDesign);
+      if (newStyle.paperTint) setPaperTint(newStyle.paperTint);
+      if (newStyle.fontFamily) setFontFamily(newStyle.fontFamily);
+      if (newStyle.pageDensity) setPageDensity(newStyle.pageDensity);
+      if (newStyle.showMargin !== undefined) setShowMargin(newStyle.showMargin);
+      if (newStyle.pageWidth) setPageWidth(newStyle.pageWidth);
+    };
+
     socket.once('load-document', handleLoadDoc);
     socket.on('user-count', handleUserCount);
     socket.on('document-renamed', handleTitleRename);
+    socket.on('page-style-updated', handlePageStyleUpdate);
 
     socket.emit('get-document', documentId);
 
     return () => {
       socket.off('user-count', handleUserCount);
       socket.off('document-renamed', handleTitleRename);
+      socket.off('page-style-updated', handlePageStyleUpdate);
     };
   }, [socket, quill, documentId]);
 
@@ -378,6 +558,7 @@ export default function TextEditor() {
         socket.emit('save-document', {
           data: quill.getContents(),
           title: titleRef.current,
+          pageStyle: pageStyleRef.current,
         });
         isDirtyRef.current = false;
         setSaveStatus('saved');
@@ -388,6 +569,27 @@ export default function TextEditor() {
       clearInterval(interval);
     };
   }, [socket, quill]);
+
+  // Handle Page Style Update & Sync
+  const handleUpdatePageStyle = (updates) => {
+    if (updates.pageDesign !== undefined) setPageDesign(updates.pageDesign);
+    if (updates.paperTint !== undefined) setPaperTint(updates.paperTint);
+    if (updates.fontFamily !== undefined) setFontFamily(updates.fontFamily);
+    if (updates.pageDensity !== undefined) setPageDensity(updates.pageDensity);
+    if (updates.showMargin !== undefined) setShowMargin(updates.showMargin);
+    if (updates.pageWidth !== undefined) setPageWidth(updates.pageWidth);
+
+    const merged = {
+      ...pageStyleRef.current,
+      ...updates,
+    };
+
+    pageStyleRef.current = merged;
+    isDirtyRef.current = true;
+    if (socket) {
+      socket.emit('update-page-style', merged);
+    }
+  };
 
   // Title Update
   const handleTitleChange = (e) => {
@@ -599,6 +801,16 @@ export default function TextEditor() {
             <span className="nav-btn-text">Templates</span>
           </button>
 
+          {/* Page Design Studio Trigger */}
+          <button
+            className="action-btn highlight-page-design"
+            onClick={() => setIsPageDesignModalOpen(true)}
+            title="Choose Page Design (Ruled, Maths, Graph, Dot, Cornell, etc.)"
+          >
+            <Grid size={14} />
+            <span className="nav-btn-text">Page Design</span>
+          </button>
+
           {/* Desktop Only: Style Dropdown */}
           <div className="dropdown-wrapper desktop-only-btn">
             <button
@@ -612,21 +824,55 @@ export default function TextEditor() {
             {isStyleOpen && (
               <div className="dropdown-menu" onClick={() => setIsStyleOpen(false)}>
                 <div style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', fontWeight: '700', color: 'var(--text-muted)' }}>
+                  QUICK PAGE DESIGN
+                </div>
+                <button className={`dropdown-item ${pageDesign === 'blank' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ pageDesign: 'blank' })}>
+                  <FileText size={13} /> Blank Canvas
+                </button>
+                <button className={`dropdown-item ${pageDesign === 'ruled' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ pageDesign: 'ruled' })}>
+                  <AlignJustify size={13} /> Ruled Notebook
+                </button>
+                <button className={`dropdown-item ${pageDesign === 'maths-grid' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ pageDesign: 'maths-grid' })}>
+                  <Grid size={13} /> Maths Grid Page
+                </button>
+                <button className={`dropdown-item ${pageDesign === 'graph-paper' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ pageDesign: 'graph-paper' })}>
+                  <Layers size={13} /> Graph Engineering
+                </button>
+                <button className={`dropdown-item ${pageDesign === 'dot-grid' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ pageDesign: 'dot-grid' })}>
+                  <span style={{ fontSize: '1.2rem', lineHeight: 0.8, marginRight: 2 }}>•</span> Dot Grid Journal
+                </button>
+                <button className={`dropdown-item ${pageDesign === 'legal-pad' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ pageDesign: 'legal-pad', paperTint: 'legal' })}>
+                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#fef9c3', border: '1px solid #fde047' }}></span> Yellow Legal Pad
+                </button>
+                <button className="dropdown-item" onClick={() => setIsPageDesignModalOpen(true)} style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>
+                  <Sliders size={13} /> All 12 Page Designs & Studio...
+                </button>
+
+                <div className="dropdown-divider"></div>
+                <div style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', fontWeight: '700', color: 'var(--text-muted)' }}>
                   PAPER TINT
                 </div>
-                <button className="dropdown-item" onClick={() => setPaperTint('white')}>
+                <button className={`dropdown-item ${paperTint === 'white' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ paperTint: 'white' })}>
                   <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffffff', border: '1px solid #cbd5e1' }}></span>
                   Clean White
                 </button>
-                <button className="dropdown-item" onClick={() => setPaperTint('sepia')}>
+                <button className={`dropdown-item ${paperTint === 'sepia' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ paperTint: 'sepia' })}>
                   <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#fbf0d9', border: '1px solid #d4c5a9' }}></span>
                   Warm Sepia
                 </button>
-                <button className="dropdown-item" onClick={() => setPaperTint('mint')}>
+                <button className={`dropdown-item ${paperTint === 'legal' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ paperTint: 'legal' })}>
+                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#fef9c3', border: '1px solid #fde047' }}></span>
+                  Legal Yellow
+                </button>
+                <button className={`dropdown-item ${paperTint === 'mint' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ paperTint: 'mint' })}>
                   <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#f0fdf4', border: '1px solid #bbf7d0' }}></span>
                   Fresh Mint
                 </button>
-                <button className="dropdown-item" onClick={() => setPaperTint('slate')}>
+                <button className={`dropdown-item ${paperTint === 'blueprint' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ paperTint: 'blueprint' })}>
+                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#0b1d3a', border: '1px solid #38bdf8' }}></span>
+                  Blueprint Navy
+                </button>
+                <button className={`dropdown-item ${paperTint === 'slate' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ paperTint: 'slate' })}>
                   <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#1e293b' }}></span>
                   Slate Dark
                 </button>
@@ -635,14 +881,17 @@ export default function TextEditor() {
                 <div style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', fontWeight: '700', color: 'var(--text-muted)' }}>
                   FONT FAMILY
                 </div>
-                <button className="dropdown-item" onClick={() => setFontFamily('sans')}>
+                <button className={`dropdown-item ${fontFamily === 'sans' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ fontFamily: 'sans' })}>
                   <Type size={13} /> Sans-Serif
                 </button>
-                <button className="dropdown-item" onClick={() => setFontFamily('serif')}>
+                <button className={`dropdown-item ${fontFamily === 'serif' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ fontFamily: 'serif' })}>
                   <span style={{ fontFamily: 'serif', fontWeight: 'bold' }}>S</span> Elegant Serif
                 </button>
-                <button className="dropdown-item" onClick={() => setFontFamily('mono')}>
+                <button className={`dropdown-item ${fontFamily === 'mono' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ fontFamily: 'mono' })}>
                   <FileCode size={13} /> Monospace
+                </button>
+                <button className={`dropdown-item ${fontFamily === 'handwritten' ? 'active' : ''}`} onClick={() => handleUpdatePageStyle({ fontFamily: 'handwritten' })}>
+                  <span style={{ fontFamily: 'Caveat, cursive', fontSize: '1.1rem', fontWeight: 'bold' }}>H</span> Handwritten Script
                 </button>
               </div>
             )}
@@ -747,6 +996,289 @@ export default function TextEditor() {
           <span>{goalProgress}%</span>
         </div>
       </footer>
+
+      {/* Page Design & Layout Studio Modal */}
+      {isPageDesignModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsPageDesignModalOpen(false)}>
+          <div className="modal-card page-design-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title">
+                <Grid size={16} color="var(--accent-primary)" />
+                <span>Page Design & Paper Studio</span>
+              </div>
+              <button className="modal-close-btn" onClick={() => setIsPageDesignModalOpen(false)} title="Close (Esc)">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="modal-body">
+              {/* Category Filter Tabs */}
+              <div className="page-filter-tabs">
+                <button
+                  className={`page-filter-btn ${pageFilter === 'all' ? 'active' : ''}`}
+                  onClick={() => setPageFilter('all')}
+                >
+                  <span>All Designs</span>
+                  <span className="filter-count">({PAGE_DESIGNS.length})</span>
+                </button>
+                <button
+                  className={`page-filter-btn ${pageFilter === 'blank' ? 'active' : ''}`}
+                  onClick={() => setPageFilter('blank')}
+                >
+                  <FileText size={12} />
+                  <span>Blank Canvas</span>
+                </button>
+                <button
+                  className={`page-filter-btn ${pageFilter === 'lined' ? 'active' : ''}`}
+                  onClick={() => setPageFilter('lined')}
+                >
+                  <AlignJustify size={12} />
+                  <span>Ruled & Lined</span>
+                </button>
+                <button
+                  className={`page-filter-btn ${pageFilter === 'grid' ? 'active' : ''}`}
+                  onClick={() => setPageFilter('grid')}
+                >
+                  <Grid size={12} />
+                  <span>Maths & Grids</span>
+                </button>
+                <button
+                  className={`page-filter-btn ${pageFilter === 'creative' ? 'active' : ''}`}
+                  onClick={() => setPageFilter('creative')}
+                >
+                  <Sparkles size={12} />
+                  <span>Creative & Special</span>
+                </button>
+              </div>
+
+              {/* Grid of Page Designs */}
+              <div className="page-designs-grid">
+                {PAGE_DESIGNS.filter(
+                  (design) => pageFilter === 'all' || design.category === pageFilter
+                ).map((design) => {
+                  const isSelected = pageDesign === design.id;
+                  return (
+                    <div
+                      key={design.id}
+                      className={`page-design-card ${isSelected ? 'active' : ''}`}
+                      onClick={() => {
+                        handleUpdatePageStyle({
+                          pageDesign: design.id,
+                          paperTint: design.defaultTint !== 'white' ? design.defaultTint : paperTint,
+                        });
+                        showToast(`Applied ${design.name} design`);
+                      }}
+                    >
+                      {/* Miniature Pattern Preview Viewport */}
+                      <div className={`page-design-preview ${design.previewClass}`}>
+                        <div className="preview-text-lines">
+                          <div className="preview-text-line"></div>
+                          <div className="preview-text-line medium"></div>
+                          <div className="preview-text-line short"></div>
+                        </div>
+                      </div>
+
+                      {/* Design Info */}
+                      <div className="page-design-info">
+                        <div className="page-design-header">
+                          <span className="page-design-title">
+                            {design.name}
+                            {isSelected && <Check size={13} color="var(--accent-primary)" strokeWidth={3} />}
+                          </span>
+                          <span className="page-design-badge">{design.tag}</span>
+                        </div>
+                        <div className="page-design-desc">{design.desc}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Customization & Paper Controls */}
+              <div className="page-options-container">
+                <div className="page-options-title">Page & Paper Layout Controls</div>
+                <div className="page-options-grid">
+                  {/* Line / Grid Density */}
+                  <div className="page-options-group">
+                    <div className="page-options-label">
+                      <Sliders size={13} />
+                      <span>Grid & Line Density</span>
+                    </div>
+                    <div className="segmented-control">
+                      <button
+                        className={`segment-btn ${pageDensity === 'compact' ? 'active' : ''}`}
+                        onClick={() => handleUpdatePageStyle({ pageDensity: 'compact' })}
+                      >
+                        Compact
+                      </button>
+                      <button
+                        className={`segment-btn ${pageDensity === 'standard' ? 'active' : ''}`}
+                        onClick={() => handleUpdatePageStyle({ pageDensity: 'standard' })}
+                      >
+                        Standard
+                      </button>
+                      <button
+                        className={`segment-btn ${pageDensity === 'relaxed' ? 'active' : ''}`}
+                        onClick={() => handleUpdatePageStyle({ pageDensity: 'relaxed' })}
+                      >
+                        Relaxed
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Left Margin Guide */}
+                  <div className="page-options-group">
+                    <div className="page-options-label">
+                      <BookOpen size={13} />
+                      <span>Red Margin Guide</span>
+                    </div>
+                    <div className="segmented-control">
+                      <button
+                        className={`segment-btn ${showMargin ? 'active' : ''}`}
+                        onClick={() => handleUpdatePageStyle({ showMargin: true })}
+                      >
+                        Show Margin
+                      </button>
+                      <button
+                        className={`segment-btn ${!showMargin ? 'active' : ''}`}
+                        onClick={() => handleUpdatePageStyle({ showMargin: false })}
+                      >
+                        Hide Margin
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Page Width */}
+                  <div className="page-options-group">
+                    <div className="page-options-label">
+                      <Maximize2 size={13} />
+                      <span>Page Layout Width</span>
+                    </div>
+                    <div className="segmented-control">
+                      <button
+                        className={`segment-btn ${pageWidth === 'compact' ? 'active' : ''}`}
+                        onClick={() => handleUpdatePageStyle({ pageWidth: 'compact' })}
+                      >
+                        Compact (720px)
+                      </button>
+                      <button
+                        className={`segment-btn ${pageWidth === 'standard' ? 'active' : ''}`}
+                        onClick={() => handleUpdatePageStyle({ pageWidth: 'standard' })}
+                      >
+                        A4 (860px)
+                      </button>
+                      <button
+                        className={`segment-btn ${pageWidth === 'wide' ? 'active' : ''}`}
+                        onClick={() => handleUpdatePageStyle({ pageWidth: 'wide' })}
+                      >
+                        Wide (1080px)
+                      </button>
+                      <button
+                        className={`segment-btn ${pageWidth === 'fluid' ? 'active' : ''}`}
+                        onClick={() => handleUpdatePageStyle({ pageWidth: 'fluid' })}
+                      >
+                        Fluid
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Typography Style */}
+                  <div className="page-options-group">
+                    <div className="page-options-label">
+                      <Type size={13} />
+                      <span>Typography Font</span>
+                    </div>
+                    <div className="segmented-control">
+                      <button
+                        className={`segment-btn ${fontFamily === 'sans' ? 'active' : ''}`}
+                        onClick={() => handleUpdatePageStyle({ fontFamily: 'sans' })}
+                      >
+                        Sans
+                      </button>
+                      <button
+                        className={`segment-btn ${fontFamily === 'serif' ? 'active' : ''}`}
+                        onClick={() => handleUpdatePageStyle({ fontFamily: 'serif' })}
+                      >
+                        Serif
+                      </button>
+                      <button
+                        className={`segment-btn ${fontFamily === 'mono' ? 'active' : ''}`}
+                        onClick={() => handleUpdatePageStyle({ fontFamily: 'mono' })}
+                      >
+                        Mono
+                      </button>
+                      <button
+                        className={`segment-btn ${fontFamily === 'handwritten' ? 'active' : ''}`}
+                        onClick={() => handleUpdatePageStyle({ fontFamily: 'handwritten' })}
+                      >
+                        Handwritten
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Paper Background Tint Selection */}
+                <div style={{ marginTop: '0.25rem' }}>
+                  <div className="page-options-label" style={{ marginBottom: '0.4rem' }}>
+                    <Palette size={13} />
+                    <span>Paper Background Tint</span>
+                  </div>
+                  <div className="color-pills-row">
+                    <button
+                      className={`color-pill-btn ${paperTint === 'white' ? 'active' : ''}`}
+                      onClick={() => handleUpdatePageStyle({ paperTint: 'white' })}
+                    >
+                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffffff', border: '1px solid #cbd5e1' }}></span>
+                      Clean White
+                    </button>
+                    <button
+                      className={`color-pill-btn ${paperTint === 'sepia' ? 'active' : ''}`}
+                      onClick={() => handleUpdatePageStyle({ paperTint: 'sepia' })}
+                    >
+                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#fbf0d9', border: '1px solid #d4c5a9' }}></span>
+                      Warm Sepia
+                    </button>
+                    <button
+                      className={`color-pill-btn ${paperTint === 'legal' ? 'active' : ''}`}
+                      onClick={() => handleUpdatePageStyle({ paperTint: 'legal' })}
+                    >
+                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#fef9c3', border: '1px solid #fde047' }}></span>
+                      Legal Yellow
+                    </button>
+                    <button
+                      className={`color-pill-btn ${paperTint === 'mint' ? 'active' : ''}`}
+                      onClick={() => handleUpdatePageStyle({ paperTint: 'mint' })}
+                    >
+                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#f0fdf4', border: '1px solid #bbf7d0' }}></span>
+                      Fresh Mint
+                    </button>
+                    <button
+                      className={`color-pill-btn ${paperTint === 'blueprint' ? 'active' : ''}`}
+                      onClick={() => handleUpdatePageStyle({ paperTint: 'blueprint' })}
+                    >
+                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#0b1d3a', border: '1px solid #38bdf8' }}></span>
+                      Blueprint
+                    </button>
+                    <button
+                      className={`color-pill-btn ${paperTint === 'parchment' ? 'active' : ''}`}
+                      onClick={() => handleUpdatePageStyle({ paperTint: 'parchment' })}
+                    >
+                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#fbf5e6', border: '1px solid #d4a373' }}></span>
+                      Parchment
+                    </button>
+                    <button
+                      className={`color-pill-btn ${paperTint === 'slate' ? 'active' : ''}`}
+                      onClick={() => handleUpdatePageStyle({ paperTint: 'slate' })}
+                    >
+                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#1e293b' }}></span>
+                      Slate Dark
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Starter Templates Modal */}
       {isTemplateModalOpen && (

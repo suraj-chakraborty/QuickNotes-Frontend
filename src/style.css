@@ -41,6 +41,20 @@
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-serif: 'Merriweather', Georgia, serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --font-handwritten: 'Caveat', cursive, var(--font-sans);
+
+  /* Page Grid & Line Pattern Tokens */
+  --page-spacing: 32px;
+  --page-baseline: 24px;
+  --page-margin-x: 64px;
+  --page-text-pad-left: 78px;
+  --page-pad-top: 32px;
+  --page-line-color: rgba(59, 130, 246, 0.24);
+  --page-line-color-strong: rgba(59, 130, 246, 0.5);
+  --page-margin-color: rgba(239, 68, 68, 0.55);
+  --page-grid-major: rgba(37, 99, 235, 0.35);
+  --page-grid-minor: rgba(37, 99, 235, 0.14);
+  --page-dot-color: rgba(15, 23, 42, 0.28);
 
   /* Paper Color Tint Presets (Light Mode) */
   --paper-bg-white: #ffffff;
@@ -49,8 +63,17 @@
   --paper-bg-sepia: #fbf0d9;
   --paper-text-sepia: #433422;
   
+  --paper-bg-legal: #fef9c3;
+  --paper-text-legal: #1e293b;
+  
   --paper-bg-mint: #f0fdf4;
   --paper-text-mint: #14532d;
+  
+  --paper-bg-blueprint: #0b1d3a;
+  --paper-text-blueprint: #e0f2fe;
+
+  --paper-bg-parchment: #fbf5e6;
+  --paper-text-parchment: #452b14;
   
   --paper-bg-slate: #1e293b;
   --paper-text-slate: #f8fafc;
@@ -84,14 +107,30 @@
 
   --shadow-paper: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08);
 
+  --page-line-color: rgba(148, 163, 184, 0.2);
+  --page-line-color-strong: rgba(148, 163, 184, 0.45);
+  --page-margin-color: rgba(248, 113, 113, 0.4);
+  --page-grid-major: rgba(96, 165, 250, 0.25);
+  --page-grid-minor: rgba(96, 165, 250, 0.1);
+  --page-dot-color: rgba(255, 255, 255, 0.25);
+
   --paper-bg-white: #141417;
   --paper-text-white: #fafafa;
   
   --paper-bg-sepia: #1c1813;
   --paper-text-sepia: #f4e8d3;
+
+  --paper-bg-legal: #272314;
+  --paper-text-legal: #fef08a;
   
   --paper-bg-mint: #091a13;
   --paper-text-mint: #dcfce7;
+
+  --paper-bg-blueprint: #07152b;
+  --paper-text-blueprint: #bae6fd;
+
+  --paper-bg-parchment: #211913;
+  --paper-text-parchment: #fce7c8;
   
   --paper-bg-slate: #18181b;
   --paper-text-slate: #fafafa;
@@ -111,9 +150,24 @@
   color: var(--paper-text-sepia) !important;
 }
 
+[data-paper='legal'] .ql-editor {
+  background-color: var(--paper-bg-legal) !important;
+  color: var(--paper-text-legal) !important;
+}
+
 [data-paper='mint'] .ql-editor {
   background-color: var(--paper-bg-mint) !important;
   color: var(--paper-text-mint) !important;
+}
+
+[data-paper='blueprint'] .ql-editor {
+  background-color: var(--paper-bg-blueprint) !important;
+  color: var(--paper-text-blueprint) !important;
+}
+
+[data-paper='parchment'] .ql-editor {
+  background-color: var(--paper-bg-parchment) !important;
+  color: var(--paper-text-parchment) !important;
 }
 
 [data-paper='slate'] .ql-editor {
@@ -133,11 +187,19 @@
 
 [data-font='serif'] .ql-editor {
   font-family: var(--font-serif) !important;
+}
+[data-page-design='blank'][data-font='serif'] .ql-editor {
   line-height: 1.85 !important;
 }
 
 [data-font='mono'] .ql-editor {
   font-family: var(--font-mono) !important;
+}
+
+[data-font='handwritten'] .ql-editor {
+  font-family: var(--font-handwritten) !important;
+  font-size: 1.35rem !important;
+  font-weight: 500 !important;
 }
 
 *, *::before, *::after {
@@ -1576,6 +1638,836 @@ body {
   }
 }
 
+/* ==========================================================================
+   PAGE DESIGNS, DENSITY, WIDTH & PATTERNS (PIXEL-PERFECT BASELINE ALIGNMENT)
+   ========================================================================== */
+
+/* Page Density & Spacing Presets */
+[data-page-density='compact'] {
+  --page-spacing: 24px;
+  --page-baseline: 18px;
+  --page-margin-x: 52px;
+  --page-text-pad-left: 66px;
+  --page-pad-top: 24px;
+}
+[data-page-density='standard'] {
+  --page-spacing: 32px;
+  --page-baseline: 24px;
+  --page-margin-x: 64px;
+  --page-text-pad-left: 78px;
+  --page-pad-top: 32px;
+}
+[data-page-density='relaxed'] {
+  --page-spacing: 40px;
+  --page-baseline: 30px;
+  --page-margin-x: 72px;
+  --page-text-pad-left: 88px;
+  --page-pad-top: 40px;
+}
+
+/* Page Layout Widths */
+[data-page-width='compact'] .ql-editor {
+  max-width: 720px !important;
+}
+[data-page-width='standard'] .ql-editor {
+  max-width: 860px !important;
+}
+[data-page-width='wide'] .ql-editor {
+  max-width: 1080px !important;
+}
+[data-page-width='fluid'] .ql-editor {
+  max-width: 95% !important;
+}
+
+/* --------------------------------------------------------------------------
+   STRICT BASELINE & LINE-HEIGHT LOCK FOR NOTEBOOK / GRID DESIGNS
+   -------------------------------------------------------------------------- */
+[data-page-design]:not([data-page-design='blank']) .ql-editor {
+  font-size: 16px !important;
+  line-height: var(--page-spacing) !important;
+  outline: none;
+}
+
+[data-page-design]:not([data-page-design='blank']) .ql-editor p {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: var(--page-spacing) !important;
+  min-height: var(--page-spacing) !important;
+}
+
+[data-page-design]:not([data-page-design='blank']) .ql-editor h1 {
+  margin: 0 !important;
+  font-size: 1.5rem !important;
+  line-height: calc(var(--page-spacing) * 2) !important;
+  min-height: calc(var(--page-spacing) * 2) !important;
+}
+
+[data-page-design]:not([data-page-design='blank']) .ql-editor h2 {
+  margin: 0 !important;
+  font-size: 1.3rem !important;
+  line-height: calc(var(--page-spacing) * 2) !important;
+  min-height: calc(var(--page-spacing) * 2) !important;
+}
+
+[data-page-design]:not([data-page-design='blank']) .ql-editor h3 {
+  margin: 0 !important;
+  font-size: 1.15rem !important;
+  line-height: var(--page-spacing) !important;
+  min-height: var(--page-spacing) !important;
+}
+
+[data-page-design]:not([data-page-design='blank']) .ql-editor h4,
+[data-page-design]:not([data-page-design='blank']) .ql-editor h5,
+[data-page-design]:not([data-page-design='blank']) .ql-editor h6 {
+  margin: 0 !important;
+  font-size: 1rem !important;
+  line-height: var(--page-spacing) !important;
+  min-height: var(--page-spacing) !important;
+}
+
+[data-page-design]:not([data-page-design='blank']) .ql-editor blockquote {
+  margin: 0 !important;
+  line-height: var(--page-spacing) !important;
+  padding-left: 0.75rem !important;
+}
+
+[data-page-design]:not([data-page-design='blank']) .ql-editor ol,
+[data-page-design]:not([data-page-design='blank']) .ql-editor ul {
+  margin: 0 !important;
+  padding-left: 1.5rem !important;
+}
+
+[data-page-design]:not([data-page-design='blank']) .ql-editor li {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: var(--page-spacing) !important;
+  min-height: var(--page-spacing) !important;
+}
+
+/* 1. Ruled / Lined Notebook Page */
+[data-page-design='ruled'] .ql-editor {
+  background-image: 
+    linear-gradient(90deg, transparent calc(var(--page-margin-x) - 1px), var(--page-margin-color) calc(var(--page-margin-x) - 1px), var(--page-margin-color) calc(var(--page-margin-x) + 1px), transparent calc(var(--page-margin-x) + 1px)),
+    linear-gradient(transparent calc(var(--page-baseline) - 1px), var(--page-line-color) calc(var(--page-baseline) - 1px), var(--page-line-color) var(--page-baseline), transparent var(--page-baseline));
+  background-size: 100% 100%, 100% var(--page-spacing);
+  background-attachment: local;
+  padding: var(--page-pad-top) 2.5rem var(--page-pad-top) var(--page-text-pad-left) !important;
+}
+
+/* 2. College Ruled (Narrow Lined) */
+[data-page-design='college-ruled'] .ql-editor {
+  --page-spacing: 24px;
+  --page-baseline: 18px;
+  --page-margin-x: 54px;
+  --page-text-pad-left: 66px;
+  --page-pad-top: 24px;
+  font-size: 15px !important;
+  background-image: 
+    linear-gradient(90deg, transparent calc(var(--page-margin-x) - 1px), var(--page-margin-color) calc(var(--page-margin-x) - 1px), var(--page-margin-color) calc(var(--page-margin-x) + 1px), transparent calc(var(--page-margin-x) + 1px)),
+    linear-gradient(transparent calc(var(--page-baseline) - 1px), var(--page-line-color) calc(var(--page-baseline) - 1px), var(--page-line-color) var(--page-baseline), transparent var(--page-baseline));
+  background-size: 100% 100%, 100% var(--page-spacing);
+  background-attachment: local;
+  padding: var(--page-pad-top) 2.5rem var(--page-pad-top) var(--page-text-pad-left) !important;
+}
+
+/* 3. Maths / Square Grid Page */
+[data-page-design='maths-grid'] .ql-editor {
+  background-image: 
+    linear-gradient(to right, var(--page-grid-minor) 1.2px, transparent 1.2px),
+    linear-gradient(to bottom, var(--page-grid-minor) 1.2px, transparent 1.2px);
+  background-size: var(--page-spacing) var(--page-spacing);
+  background-attachment: local;
+  padding: var(--page-pad-top) 2rem !important;
+}
+
+/* 4. Engineering Graph Paper */
+[data-page-design='graph-paper'] .ql-editor {
+  background-image: 
+    linear-gradient(to right, var(--page-grid-major) 1.5px, transparent 1.5px),
+    linear-gradient(to bottom, var(--page-grid-major) 1.5px, transparent 1.5px),
+    linear-gradient(to right, var(--page-grid-minor) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--page-grid-minor) 1px, transparent 1px);
+  background-size: 
+    calc(var(--page-spacing) * 4) calc(var(--page-spacing) * 4),
+    calc(var(--page-spacing) * 4) calc(var(--page-spacing) * 4),
+    var(--page-spacing) var(--page-spacing),
+    var(--page-spacing) var(--page-spacing);
+  background-attachment: local;
+  padding: var(--page-pad-top) 2rem !important;
+}
+
+/* 5. Dot Grid / Bullet Journal */
+[data-page-design='dot-grid'] .ql-editor {
+  background-image: radial-gradient(circle, var(--page-dot-color) 1.3px, transparent 1.3px);
+  background-size: var(--page-spacing) var(--page-spacing);
+  background-attachment: local;
+  padding: var(--page-pad-top) 2.5rem !important;
+}
+
+/* 6. Cornell Notes */
+[data-page-design='cornell'] .ql-editor {
+  background-image: 
+    linear-gradient(90deg, transparent 180px, var(--page-line-color-strong) 180px, var(--page-line-color-strong) 182px, transparent 182px),
+    linear-gradient(transparent calc(var(--page-baseline) - 1px), var(--page-line-color) calc(var(--page-baseline) - 1px), var(--page-line-color) var(--page-baseline), transparent var(--page-baseline));
+  background-size: 100% 100%, 100% var(--page-spacing);
+  background-attachment: local;
+  padding: var(--page-pad-top) 2.5rem var(--page-pad-top) 198px !important;
+}
+
+/* 7. Yellow Legal Pad */
+[data-page-design='legal-pad'] .ql-editor {
+  background-color: var(--paper-bg-legal) !important;
+  color: var(--paper-text-legal) !important;
+  background-image: 
+    linear-gradient(90deg, transparent 58px, rgba(239, 68, 68, 0.65) 58px, rgba(239, 68, 68, 0.65) 59px, transparent 59px, transparent 63px, rgba(239, 68, 68, 0.65) 63px, rgba(239, 68, 68, 0.65) 64px, transparent 64px),
+    linear-gradient(transparent calc(var(--page-baseline) - 1px), rgba(59, 130, 246, 0.35) calc(var(--page-baseline) - 1px), rgba(59, 130, 246, 0.35) var(--page-baseline), transparent var(--page-baseline));
+  background-size: 100% 100%, 100% var(--page-spacing);
+  background-attachment: local;
+  padding: var(--page-pad-top) 2.5rem var(--page-pad-top) 78px !important;
+}
+[data-theme='dark'] [data-page-design='legal-pad'] .ql-editor {
+  background-color: var(--paper-bg-legal) !important;
+  color: var(--paper-text-legal) !important;
+  background-image: 
+    linear-gradient(90deg, transparent 58px, rgba(248, 113, 113, 0.55) 58px, rgba(248, 113, 113, 0.55) 59px, transparent 59px, transparent 63px, rgba(248, 113, 113, 0.55) 63px, rgba(248, 113, 113, 0.55) 64px, transparent 64px),
+    linear-gradient(transparent calc(var(--page-baseline) - 1px), rgba(96, 165, 250, 0.25) calc(var(--page-baseline) - 1px), rgba(96, 165, 250, 0.25) var(--page-baseline), transparent var(--page-baseline));
+  background-size: 100% 100%, 100% var(--page-spacing);
+}
+
+/* 8. Isometric 3D Grid */
+[data-page-design='isometric'] .ql-editor {
+  background-image: 
+    linear-gradient(30deg, var(--page-grid-minor) 1.2px, transparent 1.2px),
+    linear-gradient(150deg, var(--page-grid-minor) 1.2px, transparent 1.2px),
+    linear-gradient(270deg, var(--page-grid-minor) 1.2px, transparent 1.2px);
+  background-size: var(--page-spacing) calc(var(--page-spacing) * 1.732);
+  background-attachment: local;
+  padding: var(--page-pad-top) 2rem !important;
+}
+
+/* 9. Vintage Parchment */
+[data-page-design='vintage-parchment'] .ql-editor {
+  background-color: var(--paper-bg-parchment) !important;
+  color: var(--paper-text-parchment) !important;
+  background-image: 
+    linear-gradient(90deg, transparent calc(var(--page-margin-x) - 1px), rgba(180, 83, 9, 0.45) calc(var(--page-margin-x) - 1px), rgba(180, 83, 9, 0.45) calc(var(--page-margin-x) + 1px), transparent calc(var(--page-margin-x) + 1px)),
+    linear-gradient(transparent calc(var(--page-baseline) - 1px), rgba(161, 98, 7, 0.28) calc(var(--page-baseline) - 1px), rgba(161, 98, 7, 0.28) var(--page-baseline), transparent var(--page-baseline));
+  background-size: 100% 100%, 100% var(--page-spacing);
+  background-attachment: local;
+  padding: var(--page-pad-top) 2.5rem var(--page-pad-top) var(--page-text-pad-left) !important;
+}
+[data-theme='dark'] [data-page-design='vintage-parchment'] .ql-editor {
+  background-color: var(--paper-bg-parchment) !important;
+  color: var(--paper-text-parchment) !important;
+  background-image: 
+    linear-gradient(90deg, transparent calc(var(--page-margin-x) - 1px), rgba(217, 119, 6, 0.45) calc(var(--page-margin-x) - 1px), rgba(217, 119, 6, 0.45) calc(var(--page-margin-x) + 1px), transparent calc(var(--page-margin-x) + 1px)),
+    linear-gradient(transparent calc(var(--page-baseline) - 1px), rgba(217, 119, 6, 0.22) calc(var(--page-baseline) - 1px), rgba(217, 119, 6, 0.22) var(--page-baseline), transparent var(--page-baseline));
+  background-size: 100% 100%, 100% var(--page-spacing);
+}
+
+/* 10. Blueprint Tech */
+[data-page-design='blueprint'] .ql-editor {
+  background-color: var(--paper-bg-blueprint) !important;
+  color: var(--paper-text-blueprint) !important;
+  background-image: 
+    linear-gradient(to right, rgba(56, 189, 248, 0.35) 1.5px, transparent 1.5px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.35) 1.5px, transparent 1.5px),
+    linear-gradient(to right, rgba(56, 189, 248, 0.14) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.14) 1px, transparent 1px);
+  background-size: 
+    calc(var(--page-spacing) * 4) calc(var(--page-spacing) * 4),
+    calc(var(--page-spacing) * 4) calc(var(--page-spacing) * 4),
+    var(--page-spacing) var(--page-spacing),
+    var(--page-spacing) var(--page-spacing);
+  background-attachment: local;
+  padding: var(--page-pad-top) 2rem !important;
+}
+
+/* 11. Music Staff */
+[data-page-design='music-staff'] .ql-editor {
+  background-image: linear-gradient(
+    transparent 0px, transparent 20px,
+    var(--page-line-color-strong) 20px, var(--page-line-color-strong) 21px,
+    transparent 21px, transparent 28px,
+    var(--page-line-color-strong) 28px, var(--page-line-color-strong) 29px,
+    transparent 29px, transparent 36px,
+    var(--page-line-color-strong) 36px, var(--page-line-color-strong) 37px,
+    transparent 37px, transparent 44px,
+    var(--page-line-color-strong) 44px, var(--page-line-color-strong) 45px,
+    transparent 45px, transparent 52px,
+    var(--page-line-color-strong) 52px, var(--page-line-color-strong) 53px,
+    transparent 53px, transparent 100px
+  );
+  background-size: 100% 100px;
+  background-attachment: local;
+  padding: 24px 2.5rem !important;
+}
+
+/* 12. Blank Page */
+[data-page-design='blank'] .ql-editor {
+  background-image: none !important;
+  padding: 3rem 3.5rem !important;
+  line-height: 1.75 !important;
+}
+[data-page-design='blank'] .ql-editor p {
+  margin-bottom: 0.85em !important;
+  line-height: 1.75 !important;
+}
+
+/* Margin Off Overrides */
+[data-show-margin='false'] [data-page-design='ruled'] .ql-editor,
+[data-show-margin='false'] [data-page-design='college-ruled'] .ql-editor,
+[data-show-margin='false'] [data-page-design='legal-pad'] .ql-editor,
+[data-show-margin='false'] [data-page-design='vintage-parchment'] .ql-editor,
+[data-show-margin='false'][data-page-design='ruled'] .ql-editor,
+[data-show-margin='false'][data-page-design='college-ruled'] .ql-editor,
+[data-show-margin='false'][data-page-design='legal-pad'] .ql-editor,
+[data-show-margin='false'][data-page-design='vintage-parchment'] .ql-editor {
+  padding-left: 2.5rem !important;
+  background-image: 
+    linear-gradient(transparent calc(var(--page-baseline) - 1px), var(--page-line-color) calc(var(--page-baseline) - 1px), var(--page-line-color) var(--page-baseline), transparent var(--page-baseline)) !important;
+  background-size: 100% var(--page-spacing) !important;
+}
+
+/* Placeholder Alignment */
+[data-page-design]:not([data-page-design='blank']) .ql-editor.ql-blank::before {
+  top: var(--page-pad-top) !important;
+  line-height: var(--page-spacing) !important;
+}
+
+[data-page-design='ruled'] .ql-editor.ql-blank::before,
+[data-page-design='college-ruled'] .ql-editor.ql-blank::before,
+[data-page-design='legal-pad'] .ql-editor.ql-blank::before,
+[data-page-design='vintage-parchment'] .ql-editor.ql-blank::before {
+  left: var(--page-text-pad-left) !important;
+}
+
+[data-page-design='cornell'] .ql-editor.ql-blank::before {
+  left: 198px !important;
+}
+
+[data-page-design='maths-grid'] .ql-editor.ql-blank::before,
+[data-page-design='graph-paper'] .ql-editor.ql-blank::before,
+[data-page-design='dot-grid'] .ql-editor.ql-blank::before,
+[data-page-design='blueprint'] .ql-editor.ql-blank::before {
+  left: 2rem !important;
+}
+
+[data-show-margin='false'] .ql-editor.ql-blank::before {
+  left: 2.5rem !important;
+}
+
+/* ==========================================================================
+   MODALS SYSTEM & PAGE DESIGN STUDIO
+   ========================================================================== */
+
+/* Universal Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: modalOverlayFade 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalOverlayFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Universal Modal Card */
+.modal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-color);
+  width: 100%;
+  max-width: 860px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.4rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.35rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.modal-close-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 1.25rem 1.4rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-height: calc(88vh - 65px);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-subtle) transparent;
+}
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 4px;
+}
+
+/* Page Filter Tabs */
+.page-filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.page-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.38rem 0.85rem;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.page-filter-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+.page-filter-btn.active {
+  background: var(--accent-light);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  font-weight: 700;
+}
+
+.filter-count {
+  font-size: 0.72rem;
+  opacity: 0.75;
+}
+
+/* Page Designs Grid */
+.page-designs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.85rem;
+}
+
+.page-design-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  position: relative;
+}
+
+.page-design-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.page-design-card.active {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary), var(--shadow-md);
+  background: var(--bg-card);
+}
+
+/* Pattern Preview Viewports */
+.page-design-preview {
+  height: 66px;
+  width: 100%;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+  background-color: var(--bg-card);
+}
+
+.preview-text-lines {
+  position: absolute;
+  top: 12px;
+  left: 32px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.preview-text-line {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(100, 116, 139, 0.4);
+}
+
+.preview-text-line.short {
+  width: 55%;
+}
+
+.preview-text-line.medium {
+  width: 80%;
+}
+
+/* Blank Preview */
+.preview-blank {
+  background-color: var(--bg-card);
+}
+.preview-blank .preview-text-lines {
+  left: 20px;
+  right: 20px;
+}
+.preview-blank .preview-text-line {
+  background: rgba(148, 163, 184, 0.35);
+}
+
+/* Ruled Previews */
+.preview-ruled {
+  background-image: 
+    linear-gradient(90deg, transparent 22px, rgba(239, 68, 68, 0.55) 22px, rgba(239, 68, 68, 0.55) 23px, transparent 23px),
+    linear-gradient(transparent 10px, rgba(59, 130, 246, 0.3) 10px, rgba(59, 130, 246, 0.3) 11px, transparent 11px);
+  background-size: 100% 100%, 100% 11px;
+}
+
+.preview-college-ruled {
+  background-image: 
+    linear-gradient(90deg, transparent 20px, rgba(239, 68, 68, 0.55) 20px, rgba(239, 68, 68, 0.55) 21px, transparent 21px),
+    linear-gradient(transparent 7px, rgba(59, 130, 246, 0.3) 7px, rgba(59, 130, 246, 0.3) 8px, transparent 8px);
+  background-size: 100% 100%, 100% 8px;
+}
+
+.preview-legal-pad {
+  background-color: #fef9c3;
+  background-image: 
+    linear-gradient(90deg, transparent 18px, rgba(239, 68, 68, 0.65) 18px, rgba(239, 68, 68, 0.65) 19px, transparent 19px, transparent 22px, rgba(239, 68, 68, 0.65) 22px, rgba(239, 68, 68, 0.65) 23px, transparent 23px),
+    linear-gradient(transparent 10px, rgba(59, 130, 246, 0.35) 10px, rgba(59, 130, 246, 0.35) 11px, transparent 11px);
+  background-size: 100% 100%, 100% 11px;
+}
+
+.preview-maths-grid {
+  background-image: 
+    linear-gradient(to right, rgba(59, 130, 246, 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(59, 130, 246, 0.25) 1px, transparent 1px);
+  background-size: 11px 11px;
+}
+
+.preview-graph-paper {
+  background-image: 
+    linear-gradient(to right, rgba(37, 99, 235, 0.45) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(37, 99, 235, 0.45) 1px, transparent 1px),
+    linear-gradient(to right, rgba(37, 99, 235, 0.18) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(37, 99, 235, 0.18) 1px, transparent 1px);
+  background-size: 33px 33px, 33px 33px, 7px 7px, 7px 7px;
+}
+
+.preview-dot-grid {
+  background-image: radial-gradient(circle, rgba(15, 23, 42, 0.45) 1.2px, transparent 1.2px);
+  background-size: 10px 10px;
+}
+
+.preview-isometric {
+  background-image: 
+    linear-gradient(30deg, rgba(59, 130, 246, 0.25) 1px, transparent 1px),
+    linear-gradient(150deg, rgba(59, 130, 246, 0.25) 1px, transparent 1px),
+    linear-gradient(270deg, rgba(59, 130, 246, 0.25) 1px, transparent 1px);
+  background-size: 11px 19px;
+}
+
+.preview-cornell {
+  background-image: 
+    linear-gradient(90deg, transparent 48px, rgba(59, 130, 246, 0.55) 48px, rgba(59, 130, 246, 0.55) 49px, transparent 49px),
+    linear-gradient(transparent 10px, rgba(59, 130, 246, 0.25) 10px, rgba(59, 130, 246, 0.25) 11px, transparent 11px);
+  background-size: 100% 100%, 100% 11px;
+}
+
+.preview-vintage-parchment {
+  background-color: #fbf5e6;
+  background-image: 
+    linear-gradient(90deg, transparent 22px, rgba(180, 83, 9, 0.45) 22px, rgba(180, 83, 9, 0.45) 23px, transparent 23px),
+    linear-gradient(transparent 10px, rgba(161, 98, 7, 0.3) 10px, rgba(161, 98, 7, 0.3) 11px, transparent 11px);
+  background-size: 100% 100%, 100% 11px;
+}
+
+.preview-blueprint {
+  background-color: #0b1d3a;
+  background-image: 
+    linear-gradient(to right, rgba(56, 189, 248, 0.45) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.45) 1px, transparent 1px),
+    linear-gradient(to right, rgba(56, 189, 248, 0.18) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.18) 1px, transparent 1px);
+  background-size: 32px 32px, 32px 32px, 8px 8px, 8px 8px;
+}
+
+.preview-music-staff {
+  background-image: linear-gradient(
+    transparent 0px, transparent 6px,
+    rgba(59, 130, 246, 0.45) 6px, rgba(59, 130, 246, 0.45) 7px,
+    transparent 7px, transparent 9px,
+    rgba(59, 130, 246, 0.45) 9px, rgba(59, 130, 246, 0.45) 10px,
+    transparent 10px, transparent 12px,
+    rgba(59, 130, 246, 0.45) 12px, rgba(59, 130, 246, 0.45) 13px,
+    transparent 13px, transparent 15px,
+    rgba(59, 130, 246, 0.45) 15px, rgba(59, 130, 246, 0.45) 16px,
+    transparent 16px, transparent 18px,
+    rgba(59, 130, 246, 0.45) 18px, rgba(59, 130, 246, 0.45) 19px,
+    transparent 19px, transparent 34px
+  );
+  background-size: 100% 34px;
+}
+
+/* Card Info */
+.page-design-info {
+  padding: 0.65rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.page-design-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.page-design-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.page-design-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.12rem 0.45rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.page-design-card.active .page-design-badge {
+  background: var(--accent-light);
+  color: var(--accent-primary);
+}
+
+.page-design-desc {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+/* Customization & Paper Controls Section */
+.page-options-container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  flex-shrink: 0;
+}
+
+.page-options-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.page-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.85rem;
+}
+
+.page-options-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.page-options-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Segmented Control Component */
+.segmented-control {
+  display: flex;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  gap: 3px;
+  width: 100%;
+}
+
+.segment-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 0.35rem 0.4rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.segment-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.segment-btn.active {
+  background: var(--accent-primary);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.3);
+}
+
+/* Color Pills */
+.color-pills-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.color-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.32rem 0.7rem;
+  border-radius: var(--radius-full);
+  font-size: 0.74rem;
+  font-weight: 600;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.color-pill-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.color-pill-btn.active {
+  background: var(--accent-light);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  font-weight: 700;
+}
+
+.action-btn.highlight-page-design {
+  background: var(--accent-light);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+.action-btn.highlight-page-design:hover {
+  background: var(--accent-primary);
+  color: #ffffff;
+}
+
+/* Responsive Modal Adjustments */
+@media (max-width: 640px) {
+  .modal-card {
+    max-height: 94vh;
+  }
+  .modal-body {
+    padding: 1rem;
+    max-height: calc(94vh - 60px);
+  }
+  .page-designs-grid {
+    grid-template-columns: 1fr;
+  }
+  .page-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Print Styles */
 @media print {
   body {
@@ -1604,7 +2496,6 @@ body {
     padding: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
-    background: transparent !important;
     color: #000000 !important;
   }
 }
