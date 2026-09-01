@@ -1,0 +1,71 @@
+name: Keep Render Server Alive
+
+on:
+  schedule:
+    # Run every 10 minutes to prevent Render free instance from spinning down (sleep after 15m)
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  ping-render:
+    name: Ping Render Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Ping Health Endpoint
+        run: |
+          # Priority: GitHub Secret -> GitHub Variable -> Fallback URL
+          TARGET_URL="${{ secrets.RENDER_SERVER_URL || vars.RENDER_SERVER_URL }}"
+
+          if [ -z "$TARGET_URL" ]; then
+            # If no secret/var is configured, use fallback or ask user to configure
+            TARGET_URL="https://quicknotes-backend.onrender.com"
+          fi
+
+          # Strip trailing slash if present
+          TARGET_URL="${TARGET_URL%/}"
+          HEALTH_ENDPOINT="${TARGET_URL}/api/health"
+
+          echo "=============================================="
+          echo "⏰ Timestamp: $(date -u)"
+          echo "📡 Pinging: $HEALTH_ENDPOINT"
+          echo "=============================================="
+
+          MAX_RETRIES=3
+          RETRY_DELAY=15
+          SUCCESS=false
+
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Attempt $i of $MAX_RETRIES..."
+            
+            # Ping with 45s timeout to account for cold starts
+            HTTP_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}\nTIME_TOTAL:%{time_total}s" \
+              --connect-timeout 30 \
+              --max-time 60 \
+              -H "User-Agent: GitHub-Actions-KeepAlive/1.0" \
+              "$HEALTH_ENDPOINT" || true)
+
+            HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -e '/HTTP_STATUS:/,$d')
+            HTTP_STATUS=$(echo "$HTTP_RESPONSE" | grep "HTTP_STATUS:" | cut -d':' -f2)
+            TIME_TOTAL=$(echo "$HTTP_RESPONSE" | grep "TIME_TOTAL:" | cut -d':' -f2)
+
+            echo "Response Status: $HTTP_STATUS"
+            echo "Response Time:   $TIME_TOTAL"
+            echo "Response Body:   $HTTP_BODY"
+
+            if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 400 ]; then
+              echo "✅ Server is alive and responding healthy!"
+              SUCCESS=true
+              break
+            else
+              echo "⚠️ Server returned status $HTTP_STATUS or timed out. Waiting ${RETRY_DELAY}s before retry..."
+              sleep $RETRY_DELAY
+            fi
+          done
+
+          if [ "$SUCCESS" = false ]; then
+            echo "❌ Failed to get a successful response after $MAX_RETRIES attempts."
+            echo "💡 Tip: Make sure your Render URL is correct in GitHub repository Secrets / Variables (RENDER_SERVER_URL)."
+            exit 1
+          fi
