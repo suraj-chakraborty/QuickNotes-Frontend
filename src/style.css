@@ -1026,47 +1026,118 @@ body {
   line-height: 1.35;
 }
 
-/* Drawer for Recent Documents */
+/* Drawer for Recent Documents & Pages */
 .drawer-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
   z-index: 300;
   display: flex;
   justify-content: flex-start;
+  animation: fadeIn 0.15s ease-out;
 }
 
 .drawer {
   background: var(--bg-card);
-  width: 300px;
-  max-width: 85vw;
+  width: 350px;
+  max-width: 88vw;
   height: 100%;
   box-shadow: var(--shadow-xl);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
+  animation: drawerSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes drawerSlideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 .drawer-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.25rem;
+  padding: 0.9rem 1.15rem;
   border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
 }
 
 .drawer-title {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  font-size: 0.95rem;
+  gap: 0.5rem;
+  font-size: 0.92rem;
   font-weight: 700;
+  color: var(--text-primary);
+}
+
+.drawer-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: var(--accent-light);
+  color: var(--accent-text);
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+}
+
+.drawer-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.drawer-new-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  background: var(--accent-primary);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.drawer-new-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.drawer-search-box {
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.drawer-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+}
+
+.drawer-search-input::placeholder {
+  color: var(--text-muted);
 }
 
 .drawer-list {
   flex: 1;
   overflow-y: auto;
-  padding: 0.65rem;
+  padding: 0.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -1076,7 +1147,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.55rem 0.75rem;
+  padding: 0.6rem 0.75rem;
   background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
@@ -1084,10 +1155,12 @@ body {
   font-size: 0.82rem;
   cursor: pointer;
   text-align: left;
+  transition: all 0.15s ease;
 }
 
 .drawer-item:hover {
   background: var(--bg-hover);
+  border-color: var(--border-subtle);
 }
 
 .drawer-item.active {
@@ -1097,11 +1170,74 @@ body {
   border-color: var(--border-subtle);
 }
 
+.drawer-item-main {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.drawer-item-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
 .drawer-item-title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  flex: 1;
+  font-size: 0.83rem;
+  font-weight: 500;
+}
+
+.drawer-item-date {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.drawer-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.drawer-item-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  opacity: 0.55;
+}
+
+.drawer-item:hover .drawer-item-delete-btn {
+  opacity: 1;
+}
+
+.drawer-item-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--status-danger, #ef4444);
+}
+
+.drawer-empty-state {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 /* ========================================================

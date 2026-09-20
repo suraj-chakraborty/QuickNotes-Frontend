@@ -35,11 +35,25 @@ import {
   BookOpen,
   Sliders,
   AlignJustify,
+  Search,
 } from 'lucide-react';
 import TypingTest from './TypingTest';
 
 const SAVE_INTERVAL = 2000;
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+function formatTimeAgo(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  const now = new Date();
+  const diffSec = Math.floor((now - date) / 1000);
+  if (diffSec < 60) return 'Just now';
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+  if (diffSec < 604800) return `${Math.floor(diffSec / 86400)}d ago`;
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
 
 // Register Undo / Redo SVG Icons into Quill's icon registry
 const icons = Quill.import('ui/icons');
@@ -302,11 +316,30 @@ export default function TextEditor() {
     }
   });
 
+  // Pages List & Deletion State
+  const [allPages, setAllPages] = useState([]);
+  const [pageSearchQuery, setPageSearchQuery] = useState('');
+  const [pageToDelete, setPageToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const titleRef = useRef(docTitle);
   titleRef.current = docTitle;
   const isDirtyRef = useRef(false);
   const quillRef = useRef(null);
   quillRef.current = quill;
+  const activeDocIdRef = useRef(documentId);
+
+  const flushCurrentDocument = useCallback(() => {
+    if (isDirtyRef.current && socket && activeDocIdRef.current && quillRef.current) {
+      socket.emit('save-document', {
+        documentId: activeDocIdRef.current,
+        data: quillRef.current.getContents(),
+        title: titleRef.current,
+        pageStyle: pageStyleRef.current,
+      });
+      isDirtyRef.current = false;
+    }
+  }, [socket]);
 
   const pageStyleRef = useRef({
     pageDesign,
@@ -372,12 +405,77 @@ export default function TextEditor() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [zenMode]);
 
+  // Fetch All Pages from Backend API
+  const fetchPages = useCallback(async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/documents`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.documents) {
+          setAllPages(data.documents);
+          const mapped = data.documents.map((d) => ({
+            id: d._id,
+            title: d.title,
+            time: new Date(d.updatedAt || d.createdAt).getTime(),
+          }));
+          localStorage.setItem('qn-recent-docs', JSON.stringify(mapped));
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch pages:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPages();
+  }, [fetchPages]);
+
+  useEffect(() => {
+    if (isRecentDrawerOpen) {
+      fetchPages();
+    }
+  }, [isRecentDrawerOpen, fetchPages]);
+
+  // Global socket listener for document deletion & remote renaming
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleDocDeleted = (deletedId) => {
+      setAllPages((prev) => prev.filter((p) => p._id !== deletedId));
+      setRecentDocs((prev) => prev.filter((p) => p.id !== deletedId));
+    };
+
+    const handleGlobalDocRenamed = (payload) => {
+      const id = typeof payload === 'object' ? payload.documentId : null;
+      const title = typeof payload === 'object' ? payload.title : payload;
+      if (id) {
+        setAllPages((prev) =>
+          prev.map((p) => (p._id === id ? { ...p, title } : p))
+        );
+        setRecentDocs((prev) =>
+          prev.map((p) => (p.id === id ? { ...p, title } : p))
+        );
+        if (id === activeDocIdRef.current) {
+          setDocTitle(title);
+        }
+      }
+    };
+
+    socket.on('document-deleted', handleDocDeleted);
+    socket.on('document-renamed', handleGlobalDocRenamed);
+
+    return () => {
+      socket.off('document-deleted', handleDocDeleted);
+      socket.off('document-renamed', handleGlobalDocRenamed);
+    };
+  }, [socket]);
+
   // Track Recent Documents in localStorage
   useEffect(() => {
     if (!documentId) return;
     setRecentDocs((prev) => {
       const filtered = prev.filter((d) => d.id !== documentId);
-      const updated = [{ id: documentId, title: docTitle || 'Untitled Document', time: Date.now() }, ...filtered].slice(0, 10);
+      const updated = [{ id: documentId, title: docTitle || 'Page', time: Date.now() }, ...filtered].slice(0, 15);
       localStorage.setItem('qn-recent-docs', JSON.stringify(updated));
       return updated;
     });
@@ -451,17 +549,39 @@ export default function TextEditor() {
     };
   }, []);
 
-  // 2. Load Document Data & Title
+  // 2. Load Document Data & Title (with clean reset & content recovery)
   useEffect(() => {
-    if (!socket || !quill) return;
+    if (!socket || !quill || !documentId) return;
+
+    // Flush pending changes of previous document if we switched
+    if (activeDocIdRef.current && activeDocIdRef.current !== documentId) {
+      flushCurrentDocument();
+    }
+    activeDocIdRef.current = documentId;
+
+    // Immediately disable and clear quill so old page content never lingers
+    quill.disable();
+    quill.setText('');
+    setDocTitle('Loading...');
+    setSaveStatus('loading');
+    isDirtyRef.current = false;
 
     const handleLoadDoc = (doc) => {
-      if (doc.data) {
+      // Guard: Ignore if this document does not match the active document ID
+      if (doc.documentId && doc.documentId !== documentId) return;
+
+      if (doc.data && doc.data.ops && Array.isArray(doc.data.ops) && doc.data.ops.length > 0) {
         quill.setContents(doc.data);
+      } else if (typeof doc.data === 'string' && doc.data.trim()) {
+        quill.setText(doc.data);
+      } else {
+        quill.setText('');
       }
+
       if (doc.title) {
         setDocTitle(doc.title);
       }
+
       if (doc.pageStyle) {
         if (doc.pageStyle.pageDesign) setPageDesign(doc.pageStyle.pageDesign);
         if (doc.pageStyle.paperTint) setPaperTint(doc.pageStyle.paperTint);
@@ -470,17 +590,15 @@ export default function TextEditor() {
         if (doc.pageStyle.showMargin !== undefined) setShowMargin(doc.pageStyle.showMargin);
         if (doc.pageStyle.pageWidth) setPageWidth(doc.pageStyle.pageWidth);
       }
+
       quill.enable();
+      isDirtyRef.current = false;
       setSaveStatus('saved');
       updateStats(quill);
     };
 
     const handleUserCount = (count) => {
       setUserCount(count || 1);
-    };
-
-    const handleTitleRename = (newTitle) => {
-      setDocTitle(newTitle);
     };
 
     const handlePageStyleUpdate = (newStyle) => {
@@ -493,19 +611,19 @@ export default function TextEditor() {
       if (newStyle.pageWidth) setPageWidth(newStyle.pageWidth);
     };
 
-    socket.once('load-document', handleLoadDoc);
+    socket.on('load-document', handleLoadDoc);
     socket.on('user-count', handleUserCount);
-    socket.on('document-renamed', handleTitleRename);
     socket.on('page-style-updated', handlePageStyleUpdate);
 
     socket.emit('get-document', documentId);
 
     return () => {
+      flushCurrentDocument();
+      socket.off('load-document', handleLoadDoc);
       socket.off('user-count', handleUserCount);
-      socket.off('document-renamed', handleTitleRename);
       socket.off('page-style-updated', handlePageStyleUpdate);
     };
-  }, [socket, quill, documentId]);
+  }, [socket, quill, documentId, flushCurrentDocument]);
 
   // 3. Calculate Stats
   const updateStats = (editor) => {
@@ -549,13 +667,14 @@ export default function TextEditor() {
     };
   }, [socket, quill]);
 
-  // 6. Auto-Save to MongoDB
+  // 6. Auto-Save to MongoDB (Safe per-document saving)
   useEffect(() => {
     if (!socket || !quill) return;
 
     const interval = setInterval(() => {
-      if (isDirtyRef.current) {
+      if (isDirtyRef.current && activeDocIdRef.current) {
         socket.emit('save-document', {
+          documentId: activeDocIdRef.current,
           data: quill.getContents(),
           title: titleRef.current,
           pageStyle: pageStyleRef.current,
@@ -586,8 +705,8 @@ export default function TextEditor() {
 
     pageStyleRef.current = merged;
     isDirtyRef.current = true;
-    if (socket) {
-      socket.emit('update-page-style', merged);
+    if (socket && documentId) {
+      socket.emit('update-page-style', { documentId, pageStyle: merged });
     }
   };
 
@@ -596,8 +715,29 @@ export default function TextEditor() {
     const newTitle = e.target.value;
     setDocTitle(newTitle);
     isDirtyRef.current = true;
-    if (socket) {
-      socket.emit('rename-document', newTitle);
+    if (socket && documentId) {
+      socket.emit('rename-document', { documentId, newTitle });
+    }
+  };
+
+  const handleTitleBlur = () => {
+    const trimmed = docTitle.trim();
+    if (!trimmed) {
+      if (socket && documentId) {
+        socket.emit('rename-document', { documentId, newTitle: '' });
+      }
+      return;
+    }
+
+    // Check if another page has this exact title
+    const duplicate = allPages.find(
+      (p) => p._id !== documentId && p.title.trim().toLowerCase() === trimmed.toLowerCase()
+    );
+    if (duplicate) {
+      showToast(`Page "${trimmed}" already exists. Ensuring unique name...`);
+    }
+    if (socket && documentId) {
+      socket.emit('rename-document', { documentId, newTitle: trimmed });
     }
   };
 
@@ -611,9 +751,21 @@ export default function TextEditor() {
     }
   };
 
-  // New Note
+  // New Note (Always an empty page)
   const handleNewNote = () => {
-    navigate(`/documents/${uuidV4()}`);
+    flushCurrentDocument();
+
+    const newId = uuidV4();
+    if (quill) {
+      quill.disable();
+      quill.setText('');
+    }
+    setDocTitle('Loading...');
+    setSaveStatus('loading');
+    isDirtyRef.current = false;
+
+    navigate(`/documents/${newId}`);
+    showToast('Created new empty page');
   };
 
   // Apply Starter Template
@@ -757,8 +909,14 @@ export default function TextEditor() {
               className="document-title-input"
               value={docTitle}
               onChange={handleTitleChange}
-              placeholder="Untitled Document"
-              title="Click to rename document"
+              onBlur={handleTitleBlur}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.currentTarget.blur();
+                }
+              }}
+              placeholder="Page Title"
+              title="Click to rename page (each page has a unique name)"
             />
             {/* Status Badge */}
             <div className={`status-pill ${saveStatus}`} title={`Status: ${saveStatus}`}>
@@ -1355,43 +1513,187 @@ export default function TextEditor() {
       )}
 
       {/* Recent Notes Drawer */}
+      {/* Pages List & History Drawer */}
       {isRecentDrawerOpen && (
         <div className="drawer-overlay" onClick={() => setIsRecentDrawerOpen(false)}>
           <div className="drawer" onClick={(e) => e.stopPropagation()}>
             <div className="drawer-header">
               <div className="drawer-title">
                 <History size={16} color="var(--accent-primary)" />
-                <span>Recent Documents</span>
+                <span>Pages & History</span>
+                <span className="drawer-badge">{allPages.length}</span>
               </div>
-              <button className="modal-close-btn" onClick={() => setIsRecentDrawerOpen(false)}>
+              <div className="drawer-header-actions">
+                <button
+                  className="modal-close-btn"
+                  onClick={() => setIsRecentDrawerOpen(false)}
+                  title="Close Drawer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Search filter for pages */}
+            <div className="drawer-search-box">
+              <Search size={14} color="var(--text-muted)" />
+              <input
+                type="text"
+                className="drawer-search-input"
+                placeholder="Search pages by name..."
+                value={pageSearchQuery}
+                onChange={(e) => setPageSearchQuery(e.target.value)}
+              />
+              {pageSearchQuery && (
+                <button
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                  onClick={() => setPageSearchQuery('')}
+                >
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+
+            <div className="drawer-list">
+              {allPages
+                .filter((p) =>
+                  (p.title || '').toLowerCase().includes(pageSearchQuery.toLowerCase())
+                )
+                .map((doc) => {
+                  const isActive = doc._id === documentId;
+                  return (
+                    <div
+                      key={doc._id}
+                      className={`drawer-item ${isActive ? 'active' : ''}`}
+                      onClick={() => {
+                        setIsRecentDrawerOpen(false);
+                        if (doc._id !== documentId) {
+                          flushCurrentDocument();
+                          navigate(`/documents/${doc._id}`);
+                        }
+                      }}
+                    >
+                      <div className="drawer-item-main">
+                        <FileText size={15} color={isActive ? 'var(--accent-primary)' : 'var(--text-secondary)'} />
+                        <div className="drawer-item-text">
+                          <span className="drawer-item-title">{doc.title}</span>
+                          <span className="drawer-item-date">{formatTimeAgo(doc.updatedAt || doc.createdAt)}</span>
+                        </div>
+                      </div>
+                      <div className="drawer-item-actions">
+                        {isActive && <Check size={14} color="var(--accent-primary)" strokeWidth={2.5} />}
+                        <button
+                          className="drawer-item-delete-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPageToDelete(doc);
+                          }}
+                          title={`Delete "${doc.title}"`}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              {allPages.filter((p) =>
+                (p.title || '').toLowerCase().includes(pageSearchQuery.toLowerCase())
+              ).length === 0 && (
+                <div className="drawer-empty-state">
+                  <FileText size={24} strokeWidth={1.5} />
+                  <p>{pageSearchQuery ? 'No matching pages found.' : 'No pages saved yet.'}</p>
+                  <button
+                    className="drawer-new-btn"
+                    style={{ marginTop: '0.5rem' }}
+                    onClick={() => {
+                      setIsRecentDrawerOpen(false);
+                      handleNewNote();
+                    }}
+                  >
+                    <Plus size={12} />
+                    <span>Create First Page</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Page Confirmation Modal */}
+      {pageToDelete && (
+        <div className="modal-overlay" onClick={() => !isDeleting && setPageToDelete(null)}>
+          <div className="modal-card" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title" style={{ color: 'var(--status-danger)' }}>
+                <Trash2 size={16} />
+                <span>Delete Page?</span>
+              </div>
+              <button
+                className="modal-close-btn"
+                onClick={() => !isDeleting && setPageToDelete(null)}
+                disabled={isDeleting}
+              >
                 <X size={16} />
               </button>
             </div>
-            <div className="drawer-list">
-              {recentDocs.length === 0 ? (
-                <p style={{ padding: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  No recent documents found on this device.
-                </p>
-              ) : (
-                recentDocs.map((doc) => (
-                  <div
-                    key={doc.id}
-                    className={`drawer-item ${doc.id === documentId ? 'active' : ''}`}
-                    onClick={() => {
-                      setIsRecentDrawerOpen(false);
-                      if (doc.id !== documentId) {
-                        navigate(`/documents/${doc.id}`);
+            <div className="modal-body">
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
+                Are you sure you want to permanently delete:
+              </p>
+              <p style={{ fontSize: '0.92rem', fontWeight: 600, color: 'var(--accent-primary)', margin: '0.4rem 0' }}>
+                "{pageToDelete.title}"
+              </p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                This action cannot be undone and will delete the page from database and history.
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
+                <button
+                  className="action-btn"
+                  onClick={() => setPageToDelete(null)}
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="action-btn danger"
+                  style={{ background: 'var(--status-danger)', color: '#fff', border: 'none' }}
+                  disabled={isDeleting}
+                  onClick={async () => {
+                    setIsDeleting(true);
+                    const docId = pageToDelete._id;
+                    const delTitle = pageToDelete.title;
+                    try {
+                      const res = await fetch(`${BACKEND_URL}/api/documents/${docId}`, {
+                        method: 'DELETE',
+                      });
+                      if (res.ok) {
+                        setAllPages((prev) => prev.filter((p) => p._id !== docId));
+                        setRecentDocs((prev) => prev.filter((p) => p.id !== docId));
+                        if (docId === documentId) {
+                          const remaining = allPages.filter((p) => p._id !== docId);
+                          if (remaining.length > 0) {
+                            navigate(`/documents/${remaining[0]._id}`);
+                          } else {
+                            handleNewNote();
+                          }
+                        }
+                        showToast(`Deleted "${delTitle}"`);
+                      } else {
+                        showToast('Failed to delete page');
                       }
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', minWidth: 0 }}>
-                      <FileText size={14} />
-                      <span className="drawer-item-title">{doc.title}</span>
-                    </div>
-                    {doc.id === documentId && <Check size={13} color="var(--accent-primary)" />}
-                  </div>
-                ))
-              )}
+                    } catch (err) {
+                      console.error('Delete error:', err);
+                      showToast('Error deleting page');
+                    } finally {
+                      setIsDeleting(false);
+                      setPageToDelete(null);
+                    }
+                  }}
+                >
+                  {isDeleting ? 'Deleting...' : 'Yes, Delete Page'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
