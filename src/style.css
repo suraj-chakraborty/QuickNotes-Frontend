@@ -779,10 +779,15 @@ body {
 }
 
 .ql-editor {
+  --editor-pad-top: 3rem;
+  --editor-pad-right: 3.5rem;
+  --editor-pad-bottom: 3rem;
+  --editor-pad-left: 3.5rem;
+  position: relative !important;
   width: 100% !important;
   max-width: 860px !important;
   min-height: 80vh !important;
-  padding: 3rem 3.5rem !important;
+  padding: var(--editor-pad-top) var(--editor-pad-right) var(--editor-pad-bottom) var(--editor-pad-left) !important;
   background-color: var(--bg-card);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
@@ -797,10 +802,20 @@ body {
 }
 
 .ql-editor.ql-blank::before {
+  position: absolute !important;
+  left: var(--editor-pad-left, 3.5rem) !important;
+  top: var(--editor-pad-top, 3rem) !important;
+  right: var(--editor-pad-right, 3.5rem) !important;
   color: var(--text-muted) !important;
   font-style: normal !important;
-  left: 3.5rem !important;
-  top: 3rem !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  letter-spacing: inherit !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-indent: 0 !important;
+  pointer-events: none !important;
 }
 
 /* Typography in Editor */
@@ -1590,14 +1605,19 @@ body {
   }
 
   .ql-editor {
-    padding: 1.25rem 0.85rem !important;
+    --editor-pad-top: 1.25rem !important;
+    --editor-pad-right: 0.85rem !important;
+    --editor-pad-bottom: 1.25rem !important;
+    --editor-pad-left: 0.85rem !important;
+    padding: var(--editor-pad-top) var(--editor-pad-right) var(--editor-pad-bottom) var(--editor-pad-left) !important;
     min-height: 75vh !important;
     border-radius: var(--radius-md);
   }
 
   .ql-editor.ql-blank::before {
-    left: 0.85rem !important;
-    top: 1.25rem !important;
+    left: var(--editor-pad-left) !important;
+    top: var(--editor-pad-top) !important;
+    right: var(--editor-pad-right) !important;
   }
 
   .bottom-bar {
@@ -1746,12 +1766,16 @@ body {
 
 /* 1. Ruled / Lined Notebook Page */
 [data-page-design='ruled'] .ql-editor {
+  --editor-pad-top: var(--page-pad-top);
+  --editor-pad-right: 2.5rem;
+  --editor-pad-bottom: var(--page-pad-top);
+  --editor-pad-left: var(--page-text-pad-left);
   background-image: 
     linear-gradient(90deg, transparent calc(var(--page-margin-x) - 1px), var(--page-margin-color) calc(var(--page-margin-x) - 1px), var(--page-margin-color) calc(var(--page-margin-x) + 1px), transparent calc(var(--page-margin-x) + 1px)),
     linear-gradient(transparent calc(var(--page-baseline) - 1px), var(--page-line-color) calc(var(--page-baseline) - 1px), var(--page-line-color) var(--page-baseline), transparent var(--page-baseline));
   background-size: 100% 100%, 100% var(--page-spacing);
   background-attachment: local;
-  padding: var(--page-pad-top) 2.5rem var(--page-pad-top) var(--page-text-pad-left) !important;
+  padding: var(--editor-pad-top) var(--editor-pad-right) var(--editor-pad-bottom) var(--editor-pad-left) !important;
 }
 
 /* 2. College Ruled (Narrow Lined) */
@@ -1761,27 +1785,39 @@ body {
   --page-margin-x: 54px;
   --page-text-pad-left: 66px;
   --page-pad-top: 24px;
+  --editor-pad-top: var(--page-pad-top);
+  --editor-pad-right: 2.5rem;
+  --editor-pad-bottom: var(--page-pad-top);
+  --editor-pad-left: var(--page-text-pad-left);
   font-size: 15px !important;
   background-image: 
     linear-gradient(90deg, transparent calc(var(--page-margin-x) - 1px), var(--page-margin-color) calc(var(--page-margin-x) - 1px), var(--page-margin-color) calc(var(--page-margin-x) + 1px), transparent calc(var(--page-margin-x) + 1px)),
     linear-gradient(transparent calc(var(--page-baseline) - 1px), var(--page-line-color) calc(var(--page-baseline) - 1px), var(--page-line-color) var(--page-baseline), transparent var(--page-baseline));
   background-size: 100% 100%, 100% var(--page-spacing);
   background-attachment: local;
-  padding: var(--page-pad-top) 2.5rem var(--page-pad-top) var(--page-text-pad-left) !important;
+  padding: var(--editor-pad-top) var(--editor-pad-right) var(--editor-pad-bottom) var(--editor-pad-left) !important;
 }
 
 /* 3. Maths / Square Grid Page */
 [data-page-design='maths-grid'] .ql-editor {
+  --editor-pad-top: var(--page-pad-top);
+  --editor-pad-right: 2rem;
+  --editor-pad-bottom: var(--page-pad-top);
+  --editor-pad-left: 2rem;
   background-image: 
     linear-gradient(to right, var(--page-grid-minor) 1.2px, transparent 1.2px),
     linear-gradient(to bottom, var(--page-grid-minor) 1.2px, transparent 1.2px);
   background-size: var(--page-spacing) var(--page-spacing);
   background-attachment: local;
-  padding: var(--page-pad-top) 2rem !important;
+  padding: var(--editor-pad-top) var(--editor-pad-right) var(--editor-pad-bottom) var(--editor-pad-left) !important;
 }
 
 /* 4. Engineering Graph Paper */
 [data-page-design='graph-paper'] .ql-editor {
+  --editor-pad-top: var(--page-pad-top);
+  --editor-pad-right: 2rem;
+  --editor-pad-bottom: var(--page-pad-top);
+  --editor-pad-left: 2rem;
   background-image: 
     linear-gradient(to right, var(--page-grid-major) 1.5px, transparent 1.5px),
     linear-gradient(to bottom, var(--page-grid-major) 1.5px, transparent 1.5px),
@@ -1793,29 +1829,41 @@ body {
     var(--page-spacing) var(--page-spacing),
     var(--page-spacing) var(--page-spacing);
   background-attachment: local;
-  padding: var(--page-pad-top) 2rem !important;
+  padding: var(--editor-pad-top) var(--editor-pad-right) var(--editor-pad-bottom) var(--editor-pad-left) !important;
 }
 
 /* 5. Dot Grid / Bullet Journal */
 [data-page-design='dot-grid'] .ql-editor {
+  --editor-pad-top: var(--page-pad-top);
+  --editor-pad-right: 2.5rem;
+  --editor-pad-bottom: var(--page-pad-top);
+  --editor-pad-left: 2.5rem;
   background-image: radial-gradient(circle, var(--page-dot-color) 1.3px, transparent 1.3px);
   background-size: var(--page-spacing) var(--page-spacing);
   background-attachment: local;
-  padding: var(--page-pad-top) 2.5rem !important;
+  padding: var(--editor-pad-top) var(--editor-pad-right) var(--editor-pad-bottom) var(--editor-pad-left) !important;
 }
 
 /* 6. Cornell Notes */
 [data-page-design='cornell'] .ql-editor {
+  --editor-pad-top: var(--page-pad-top);
+  --editor-pad-right: 2.5rem;
+  --editor-pad-bottom: var(--page-pad-top);
+  --editor-pad-left: 198px;
   background-image: 
     linear-gradient(90deg, transparent 180px, var(--page-line-color-strong) 180px, var(--page-line-color-strong) 182px, transparent 182px),
     linear-gradient(transparent calc(var(--page-baseline) - 1px), var(--page-line-color) calc(var(--page-baseline) - 1px), var(--page-line-color) var(--page-baseline), transparent var(--page-baseline));
   background-size: 100% 100%, 100% var(--page-spacing);
   background-attachment: local;
-  padding: var(--page-pad-top) 2.5rem var(--page-pad-top) 198px !important;
+  padding: var(--editor-pad-top) var(--editor-pad-right) var(--editor-pad-bottom) var(--editor-pad-left) !important;
 }
 
 /* 7. Yellow Legal Pad */
 [data-page-design='legal-pad'] .ql-editor {
+  --editor-pad-top: var(--page-pad-top);
+  --editor-pad-right: 2.5rem;
+  --editor-pad-bottom: var(--page-pad-top);
+  --editor-pad-left: var(--page-text-pad-left);
   background-color: var(--paper-bg-legal) !important;
   color: var(--paper-text-legal) !important;
   background-image: 
@@ -1823,7 +1871,7 @@ body {
     linear-gradient(transparent calc(var(--page-baseline) - 1px), rgba(59, 130, 246, 0.35) calc(var(--page-baseline) - 1px), rgba(59, 130, 246, 0.35) var(--page-baseline), transparent var(--page-baseline));
   background-size: 100% 100%, 100% var(--page-spacing);
   background-attachment: local;
-  padding: var(--page-pad-top) 2.5rem var(--page-pad-top) 78px !important;
+  padding: var(--editor-pad-top) var(--editor-pad-right) var(--editor-pad-bottom) var(--editor-pad-left) !important;
 }
 [data-theme='dark'] [data-page-design='legal-pad'] .ql-editor {
   background-color: var(--paper-bg-legal) !important;
@@ -1836,17 +1884,25 @@ body {
 
 /* 8. Isometric 3D Grid */
 [data-page-design='isometric'] .ql-editor {
+  --editor-pad-top: var(--page-pad-top);
+  --editor-pad-right: 2rem;
+  --editor-pad-bottom: var(--page-pad-top);
+  --editor-pad-left: 2rem;
   background-image: 
     linear-gradient(30deg, var(--page-grid-minor) 1.2px, transparent 1.2px),
     linear-gradient(150deg, var(--page-grid-minor) 1.2px, transparent 1.2px),
     linear-gradient(270deg, var(--page-grid-minor) 1.2px, transparent 1.2px);
   background-size: var(--page-spacing) calc(var(--page-spacing) * 1.732);
   background-attachment: local;
-  padding: var(--page-pad-top) 2rem !important;
+  padding: var(--editor-pad-top) var(--editor-pad-right) var(--editor-pad-bottom) var(--editor-pad-left) !important;
 }
 
 /* 9. Vintage Parchment */
 [data-page-design='vintage-parchment'] .ql-editor {
+  --editor-pad-top: var(--page-pad-top);
+  --editor-pad-right: 2.5rem;
+  --editor-pad-bottom: var(--page-pad-top);
+  --editor-pad-left: var(--page-text-pad-left);
   background-color: var(--paper-bg-parchment) !important;
   color: var(--paper-text-parchment) !important;
   background-image: 
@@ -1854,7 +1910,7 @@ body {
     linear-gradient(transparent calc(var(--page-baseline) - 1px), rgba(161, 98, 7, 0.28) calc(var(--page-baseline) - 1px), rgba(161, 98, 7, 0.28) var(--page-baseline), transparent var(--page-baseline));
   background-size: 100% 100%, 100% var(--page-spacing);
   background-attachment: local;
-  padding: var(--page-pad-top) 2.5rem var(--page-pad-top) var(--page-text-pad-left) !important;
+  padding: var(--editor-pad-top) var(--editor-pad-right) var(--editor-pad-bottom) var(--editor-pad-left) !important;
 }
 [data-theme='dark'] [data-page-design='vintage-parchment'] .ql-editor {
   background-color: var(--paper-bg-parchment) !important;
@@ -1867,6 +1923,10 @@ body {
 
 /* 10. Blueprint Tech */
 [data-page-design='blueprint'] .ql-editor {
+  --editor-pad-top: var(--page-pad-top);
+  --editor-pad-right: 2rem;
+  --editor-pad-bottom: var(--page-pad-top);
+  --editor-pad-left: 2rem;
   background-color: var(--paper-bg-blueprint) !important;
   color: var(--paper-text-blueprint) !important;
   background-image: 
@@ -1880,11 +1940,15 @@ body {
     var(--page-spacing) var(--page-spacing),
     var(--page-spacing) var(--page-spacing);
   background-attachment: local;
-  padding: var(--page-pad-top) 2rem !important;
+  padding: var(--editor-pad-top) var(--editor-pad-right) var(--editor-pad-bottom) var(--editor-pad-left) !important;
 }
 
 /* 11. Music Staff */
 [data-page-design='music-staff'] .ql-editor {
+  --editor-pad-top: 24px;
+  --editor-pad-right: 2.5rem;
+  --editor-pad-bottom: 24px;
+  --editor-pad-left: 2.5rem;
   background-image: linear-gradient(
     transparent 0px, transparent 20px,
     var(--page-line-color-strong) 20px, var(--page-line-color-strong) 21px,
@@ -1900,13 +1964,17 @@ body {
   );
   background-size: 100% 100px;
   background-attachment: local;
-  padding: 24px 2.5rem !important;
+  padding: var(--editor-pad-top) var(--editor-pad-right) var(--editor-pad-bottom) var(--editor-pad-left) !important;
 }
 
 /* 12. Blank Page */
 [data-page-design='blank'] .ql-editor {
+  --editor-pad-top: 3rem;
+  --editor-pad-right: 3.5rem;
+  --editor-pad-bottom: 3rem;
+  --editor-pad-left: 3.5rem;
   background-image: none !important;
-  padding: 3rem 3.5rem !important;
+  padding: var(--editor-pad-top) var(--editor-pad-right) var(--editor-pad-bottom) var(--editor-pad-left) !important;
   line-height: 1.75 !important;
 }
 [data-page-design='blank'] .ql-editor p {
@@ -1923,38 +1991,31 @@ body {
 [data-show-margin='false'][data-page-design='college-ruled'] .ql-editor,
 [data-show-margin='false'][data-page-design='legal-pad'] .ql-editor,
 [data-show-margin='false'][data-page-design='vintage-parchment'] .ql-editor {
-  padding-left: 2.5rem !important;
+  --editor-pad-left: 2.5rem !important;
+  padding-left: var(--editor-pad-left) !important;
   background-image: 
     linear-gradient(transparent calc(var(--page-baseline) - 1px), var(--page-line-color) calc(var(--page-baseline) - 1px), var(--page-line-color) var(--page-baseline), transparent var(--page-baseline)) !important;
   background-size: 100% var(--page-spacing) !important;
 }
 
-/* Placeholder Alignment */
+/* Placeholder Alignment Across All Page Designs */
+.ql-editor.ql-blank::before {
+  left: var(--editor-pad-left, 3.5rem) !important;
+  top: var(--editor-pad-top, 3rem) !important;
+  right: var(--editor-pad-right, 3.5rem) !important;
+}
+
 [data-page-design]:not([data-page-design='blank']) .ql-editor.ql-blank::before {
-  top: var(--page-pad-top) !important;
+  top: var(--editor-pad-top) !important;
+  left: var(--editor-pad-left) !important;
+  right: var(--editor-pad-right) !important;
   line-height: var(--page-spacing) !important;
 }
 
-[data-page-design='ruled'] .ql-editor.ql-blank::before,
-[data-page-design='college-ruled'] .ql-editor.ql-blank::before,
-[data-page-design='legal-pad'] .ql-editor.ql-blank::before,
-[data-page-design='vintage-parchment'] .ql-editor.ql-blank::before {
-  left: var(--page-text-pad-left) !important;
-}
-
-[data-page-design='cornell'] .ql-editor.ql-blank::before {
-  left: 198px !important;
-}
-
-[data-page-design='maths-grid'] .ql-editor.ql-blank::before,
-[data-page-design='graph-paper'] .ql-editor.ql-blank::before,
-[data-page-design='dot-grid'] .ql-editor.ql-blank::before,
-[data-page-design='blueprint'] .ql-editor.ql-blank::before {
-  left: 2rem !important;
-}
-
-[data-show-margin='false'] .ql-editor.ql-blank::before {
-  left: 2.5rem !important;
+[data-page-design='music-staff'] .ql-editor.ql-blank::before {
+  top: var(--editor-pad-top) !important;
+  left: var(--editor-pad-left) !important;
+  line-height: 24px !important;
 }
 
 /* ==========================================================================
